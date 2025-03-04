@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Bakong QR SDK
+    implementation 'kh.gov.nbc.bakong_khqr:sdk-java:1.0.0.11'
+
+
+    // Zxing
+    implementation 'com.google.zxing:core:3.5.1'
+    implementation 'com.google.zxing:javase:3.5.2'
+
+    // Lombok
+    implementation 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // https://mvnrepository.com/artifact/org.nocrala.tools.texttablefmt/text-table-formatter
+    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
+
+
+    // Text Table Formatter
+//    implementation files('libs/text-table-formatter-1.1.2.jar')
+
+    // JDBC PostgreSQL
+    implementation 'org.postgresql:postgresql:42.2.24'
+
+}
+
+test {
+    useJUnitPlatform()
+}
