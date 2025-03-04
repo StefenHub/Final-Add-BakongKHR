@@ -8,8 +8,6 @@ import org.example.services.Utils;
 import java.util.Scanner;
 
 
-
-
 public class DisplayUI {
     public static void displayUI() {
         Scanner scanner = new Scanner(System.in);
