@@ -1,3 +1,4 @@
+
 package org.example.services;
 
 import org.example.utils.DatabaseConnection;
@@ -33,6 +34,7 @@ public class OrderService {
                 item.put("description", rs.getString("description"));
                 item.put("category", rs.getString("category"));
                 item.put("size", rs.getString("size"));
+                item.put("base_price", rs.getDouble("base_price"));
                 item.put("sell_price", rs.getDouble("sell_price"));
                 item.put("discount", rs.getDouble("discount"));
                 menuItems.add(item);
@@ -75,11 +77,22 @@ public class OrderService {
 
     // Add an item to the cart
     public void addItemToCart(Map<String, Object> item, int quantity) {
+        if (item == null) {
+            System.out.println("❌ Error: Attempted to add a null item to the cart.");
+            return;
+        }
+
+        if (!item.containsKey("base_price")) {
+            System.out.println("⚠️ Warning: base_price is missing for item: " + item);
+        }
+
         Map<String, Object> cartItem = new HashMap<>(item);
         cartItem.put("quantity", quantity);
         cart.add(cartItem);
-        System.out.println("✅ Item added to cart successfully!");
+
+        System.out.println("✅ Item added to cart: " + cartItem);
     }
+
 
     // View the contents of the cart
     public void viewCart() {
@@ -168,10 +181,7 @@ public class OrderService {
         Timestamp orderTimestamp = Timestamp.valueOf(currentDateTime);
 
         String orderQuery = "INSERT INTO orders (payment_method, total_amount, order_date) VALUES (?, ?, ?)";
-        String orderItemQuery = """
-                INSERT INTO order_items (order_id, item_id, name, description, size, quantity, base_price, sell_price, discount, total_price)\s
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-               \s""";
+        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size, quantity, base_price, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false); // Start transaction
@@ -186,50 +196,61 @@ public class OrderService {
                 orderStmt.executeUpdate();
 
                 // Get generated order ID
-                ResultSet generatedKeys = orderStmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    int orderId = generatedKeys.getInt(1);
+                try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int orderId = generatedKeys.getInt(1);
 
-                    // Insert order items
-                    for (Map<String, Object> item : cart) {
-                        int itemId = (int) item.get("item_id");
-                        double basePrice = (double) item.get("base_price");
-                        int quantity = (int) item.get("quantity");
-                        double sellPrice = (double) item.get("sell_price");
-                        double discount = (double) item.get("discount");
-                        // Assuming base price is the same as sell price before discount
-                        double totalPrice = (sellPrice - discount) * quantity;
+                        // Instead of iterating over getMenuItems(), iterate over cart
+                        for (Map<String, Object> item : cart) {
+                            System.out.println("Item data: " + item);
 
-                        orderItemStmt.setInt(1, orderId);
-                        orderItemStmt.setInt(2, itemId);
-                        orderItemStmt.setString(3, (String) item.get("name"));
-                        orderItemStmt.setString(4, (String) item.get("description"));
-                        orderItemStmt.setString(5, (String) item.get("size"));
-                        orderItemStmt.setInt(6, quantity);
-                        orderItemStmt.setDouble(7, basePrice);
-                        orderItemStmt.setDouble(8, sellPrice);
-                        orderItemStmt.setDouble(9, discount);
-                        orderItemStmt.setDouble(10, totalPrice);
-                        orderItemStmt.addBatch();
+                            if (item.get("base_price") == null || item.get("sell_price") == null || item.get("discount") == null) {
+                                System.out.println("❌ Missing price data for item: " + item);
+                            }
+
+                            int itemId = ((Number) item.get("item_id")).intValue();
+                            int quantity = item.get("quantity") != null ? ((Number) item.get("quantity")).intValue() : 1; // Default to 1 if null
+                            double basePrice = item.get("base_price") != null ? ((Number) item.get("base_price")).doubleValue() : 0.0;
+                            double sellPrice = item.get("sell_price") != null ? ((Number) item.get("sell_price")).doubleValue() : 0.0;
+                            double discount = item.get("discount") != null ? ((Number) item.get("discount")).doubleValue() : 0.0;
+                            double totalPrice = (sellPrice - discount) * quantity;
+
+                            orderItemStmt.setInt(1, orderId);
+                            orderItemStmt.setInt(2, itemId);
+                            orderItemStmt.setString(3, (String) item.get("name"));
+                            orderItemStmt.setString(4, (String) item.get("description"));
+                            orderItemStmt.setString(5, (String) item.get("size"));
+                            orderItemStmt.setInt(6, quantity);
+                            orderItemStmt.setDouble(7, basePrice);
+                            orderItemStmt.setDouble(8, sellPrice);
+                            orderItemStmt.setDouble(9, discount);
+                            orderItemStmt.setDouble(10, totalPrice);
+                            orderItemStmt.addBatch();
+                        }
+                        orderItemStmt.executeBatch();
+
+
+                        conn.commit(); // Commit transaction
+                        System.out.println("✅ Order placed successfully! Order ID: " + orderId);
+                        return orderId;
+                    } else {
+                        throw new SQLException("Failed to retrieve order ID.");
                     }
-                    orderItemStmt.executeBatch();
-
-                    conn.commit(); // Commit transaction
-                    System.out.println("✅ Order placed successfully! Order ID: " + orderId);
-                    return orderId;
-                } else {
-                    throw new SQLException("Failed to retrieve order ID.");
                 }
             } catch (SQLException e) {
                 conn.rollback(); // Rollback transaction on error
-                System.out.println("❌ Database error: " + e.getMessage());
+                System.err.println("❌ Database error occurred: " + e.getMessage());
                 e.printStackTrace();
-                return -1;
+                return -2;
             }
         } catch (SQLException e) {
-            System.out.println("❌ Database error: " + e.getMessage());
+            System.err.println("❌ Database error occurred: " + e.getMessage());
             e.printStackTrace();
-            return -1;
+            return -2;
+        } catch (Exception e) {
+            System.err.println("❌ Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            return -3;
         }
     }
 
@@ -248,9 +269,8 @@ public class OrderService {
     // Process payment using the chosen payment method
     public boolean processPayment(int orderId, int paymentMethod) {
         try {
-            // Only QR Code payment is allowed
             System.out.println("Payment confirmation pending...");
-            Thread.sleep(2000); // Simulate a delay for payment confirmation
+            Thread.sleep(2000);
             System.out.println("✅ Payment confirmed via QR Code.");
             System.out.println("✅ Payment processed successfully!");
             return true;
