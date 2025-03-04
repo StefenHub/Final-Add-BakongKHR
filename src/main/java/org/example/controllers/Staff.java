@@ -32,7 +32,6 @@ public class Staff {
             int choice = validateIntegerInput(scanner, "Enter your choice: ", 1, 3);
             switch (choice) {
                 case 1:
-//                    viewAllCustomerOrders();
                     OrderManager.viewAllCustomerOrders();
                     break;
                 case 2:

@@ -168,7 +168,6 @@ public class CustomerController {
             System.out.println("Payment failed. Please try again.");
         }
 
-        //orderService.clearCart();
     }
 
     private boolean confirmOrder() {
