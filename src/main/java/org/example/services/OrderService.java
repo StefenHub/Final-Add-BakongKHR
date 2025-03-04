@@ -168,7 +168,10 @@ public class OrderService {
         Timestamp orderTimestamp = Timestamp.valueOf(currentDateTime);
 
         String orderQuery = "INSERT INTO orders (payment_method, total_amount, order_date) VALUES (?, ?, ?)";
-        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size, quantity, base_price, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String orderItemQuery = """
+                INSERT INTO order_items (order_id, item_id, name, description, size, quantity, base_price, sell_price, discount, total_price)\s
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               \s""";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false); // Start transaction
@@ -190,6 +193,7 @@ public class OrderService {
                     // Insert order items
                     for (Map<String, Object> item : cart) {
                         int itemId = (int) item.get("item_id");
+                        double basePrice = (double) item.get("base_price");
                         int quantity = (int) item.get("quantity");
                         double sellPrice = (double) item.get("sell_price");
                         double discount = (double) item.get("discount");
@@ -202,7 +206,7 @@ public class OrderService {
                         orderItemStmt.setString(4, (String) item.get("description"));
                         orderItemStmt.setString(5, (String) item.get("size"));
                         orderItemStmt.setInt(6, quantity);
-                        orderItemStmt.setDouble(7, sellPrice);
+                        orderItemStmt.setDouble(7, basePrice);
                         orderItemStmt.setDouble(8, sellPrice);
                         orderItemStmt.setDouble(9, discount);
                         orderItemStmt.setDouble(10, totalPrice);
