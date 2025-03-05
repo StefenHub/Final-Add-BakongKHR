@@ -50,7 +50,7 @@ public class Staff {
 
     //------------------- View all customer orders -------------------
     public void viewAllCustomerOrders() {
-        String query = "SELECT order_id, payment_method, total_amount, order_date FROM orders";
+        String query = "SELECT order_id, order_items.name, order_items.quantity, order_items.size, order_items.description, order_date FROM order_items";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -59,16 +59,19 @@ public class Staff {
             Table table = new Table(5, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Total Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Payment Method", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
             int count = 1;
             while (rs.next()) {
                 table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("order_id"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("total_amount"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("payment_method"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("quantity"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 

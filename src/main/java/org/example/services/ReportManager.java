@@ -1,7 +1,6 @@
 package org.example.services;
 
 import org.example.utils.DatabaseConnection;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.Scanner;

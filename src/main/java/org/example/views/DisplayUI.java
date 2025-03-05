@@ -32,7 +32,8 @@ public class DisplayUI {
                     staff.start();
                     break;
                 case 2:
-                    System.out.println("Kitchen Section - Feature Coming Soon!");
+//                    Kitchen kitchen = new Kitchen(scanner);
+//                    kitchen.start();
                     break;
                 case 3:
                     System.out.println("Customer Section");
