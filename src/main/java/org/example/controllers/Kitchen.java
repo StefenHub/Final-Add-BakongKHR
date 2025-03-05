@@ -163,7 +163,7 @@ public class Kitchen {
                 return;
         }
 
-        String query = "UPDATE orders SET order_status = ? WHERE order_id = ?";
+        String query = "UPDATE order_items SET order_status = ? WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
