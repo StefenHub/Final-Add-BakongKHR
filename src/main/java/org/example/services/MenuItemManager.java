@@ -127,12 +127,13 @@ public class MenuItemManager {
                 pstmt.setString(1, selectedCategory);
                 ResultSet rs = pstmt.executeQuery();
 
-                Table table = new Table(7, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+                Table table = new Table(8, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
                 table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Item ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell("Base Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
@@ -143,6 +144,7 @@ public class MenuItemManager {
                     table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                    table.addCell(String.format("$%.2f", rs.getDouble("base_price")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(String.format("$%.2f", rs.getDouble("sell_price")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }
@@ -328,12 +330,13 @@ public class MenuItemManager {
                 pstmt.setString(1, selectedCategory);
                 ResultSet rs = pstmt.executeQuery();
 
-                Table table = new Table(7, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+                Table table = new Table(8, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
                 table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Item ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell("Base Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
@@ -344,6 +347,7 @@ public class MenuItemManager {
                     table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                    table.addCell(String.format("$%.2f", rs.getDouble("base_price")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(String.format("$%.2f", rs.getDouble("sell_price")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }

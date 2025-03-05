@@ -36,7 +36,7 @@ public class OrderManager {
 
     private static void displayOrders(int page) {
         int offset = (page - 1) * PAGE_SIZE;
-        String query = "SELECT order_id, payment_method, total_amount, order_date FROM orders ORDER BY order_date DESC LIMIT ? OFFSET ?";
+        String query = "SELECT order_id,name , size, quantity, description, order_date FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -45,20 +45,25 @@ public class OrderManager {
             pstmt.setInt(2, offset);
             ResultSet rs = pstmt.executeQuery();
 
-            Table table = new Table(5, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
+            Table table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Total Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Payment Method", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Item Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             int count = offset + 1;
             while (rs.next()) {
                 table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("order_id"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("total_amount"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("payment_method"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("quantity"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
             }
 
             System.out.println("\n--------- CUSTOMER ORDERS ---------");
