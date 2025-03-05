@@ -158,7 +158,7 @@ public class CategoryManager {
             System.out.println("1. Add Category");
             System.out.println("2. Remove Category");
             System.out.println("3. View Categories");
-            System.out.println("4. Back to Main Menu");
+            System.out.println("4. Back");
 
             int choice = Utils.validateIntegerInput(scanner, "Enter your choice ([b] to go back): ", 1, 4);
             if (choice == -1) return;

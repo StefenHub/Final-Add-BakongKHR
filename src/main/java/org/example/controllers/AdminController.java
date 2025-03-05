@@ -53,7 +53,7 @@ public class AdminController {
                     break;
 
                 case 7:
-                    StaffManager.manageStaff(scanner);
+//                    StaffManager.manageStaff(scanner);
                     break;
                 case 8:
                     ReportManager.manageReports();

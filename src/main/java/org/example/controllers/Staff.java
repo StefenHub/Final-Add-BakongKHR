@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.services.OrderManager;
 import org.example.utils.DatabaseConnection;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -8,7 +9,6 @@ import org.nocrala.tools.texttablefmt.Table;
 import org.example.services.OrderService;
 
 import java.sql.*;
-import java.util.*;
 
 import java.util.Scanner;
 
@@ -32,7 +32,7 @@ public class Staff {
             int choice = validateIntegerInput(scanner, "Enter your choice: ", 1, 3);
             switch (choice) {
                 case 1:
-                    viewAllCustomerOrders();
+                    OrderManager.viewAllCustomerOrders();
                     break;
                 case 2:
                     // Use the existing OrderService instance to create a CustomerController
@@ -56,24 +56,35 @@ public class Staff {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
-            System.out.println("--- Customer Orders ---");
-            while (rs.next()) {
-                int orderId = rs.getInt("order_id");
-                String paymentMethod = rs.getString("payment_method");
-                double totalAmount = rs.getDouble("total_amount");
-                Timestamp orderDate = rs.getTimestamp("order_date");
+            Table table = new Table(5, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
+            table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Total Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Payment Method", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
-                System.out.println("Order ID: " + orderId);
-                System.out.println("Payment Method: " + paymentMethod);
-                System.out.println("Total Amount: " + totalAmount);
-                System.out.println("Order Date: " + orderDate);
-                System.out.println("-----------------------");
+            int count = 1;
+            while (rs.next()) {
+                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("order_id"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("total_amount"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("payment_method"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
+
+            System.out.println("\n--------- CUSTOMER ORDERS ---------");
+            if (count == 1) {
+                System.out.println("No orders found.");
+            } else {
+                System.out.println(table.render());
+            }
+
         } catch (SQLException e) {
-            System.out.println("❌ Error retrieving customer orders: " + e.getMessage());
+            System.err.println("❌ Error retrieving customer orders: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     //------------------- Method to validate integer input within a range -------------------
     private int validateIntegerInput(Scanner scanner, String prompt, int min, int max) {
@@ -82,9 +93,8 @@ public class Staff {
             String input = scanner.nextLine().trim();
 
             if (input.equalsIgnoreCase("[b]")) {
-                return -1; // Return -1 to indicate the user wants to go back
+                return -1;
             }
-
             try {
                 int value = Integer.parseInt(input);
                 if (value < min || value > max) {
