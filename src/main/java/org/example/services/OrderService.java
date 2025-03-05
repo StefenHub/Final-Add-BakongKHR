@@ -608,6 +608,7 @@ public class OrderService {
             Thread.sleep(2000);
             System.out.println("✅ Payment confirmed via QR Code.");
             System.out.println("✅ Payment processed successfully!");
+            clearCart();
             return true;
         } catch (Exception e) {
             System.out.println("❌ Payment failed: " + e.getMessage());

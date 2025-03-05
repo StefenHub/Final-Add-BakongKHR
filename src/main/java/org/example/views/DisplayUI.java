@@ -14,6 +14,7 @@ public class DisplayUI {
         OrderService orderService = new OrderService(); // Ensure menuItems is passed
 
         while (true) {
+
             System.out.println("\nWelcome to the Restaurant Management System!");
             System.out.println("1. Staff");
             System.out.println("2. Kitchen");
