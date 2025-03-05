@@ -54,13 +54,14 @@ public class Kitchen {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
-            Table table = new Table(6, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+            Table table = new Table(7, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Order Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             while (rs.next()) {
                 int orderId = rs.getInt("order_id");
@@ -75,6 +76,7 @@ public class Kitchen {
                 table.addCell(size, new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(description, new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(orderDate.toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("order_status"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
             System.out.println("\n--- All Orders ---");
@@ -88,18 +90,19 @@ public class Kitchen {
 
     // View pending orders
     private void viewPendingOrders() {
-        String query = "SELECT order_id, name, size , quantity, description, order_date FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC";
+        String query = "SELECT order_id, name, size , quantity, description, order_date, order_status FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
-            Table table = new Table(6, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+            Table table = new Table(7, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Order Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             boolean hasData = false;
             while (rs.next()) {
@@ -116,6 +119,7 @@ public class Kitchen {
                 table.addCell(String.valueOf(quantity), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(description, new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(orderDate.toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("order_status"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
             if (!hasData) {
