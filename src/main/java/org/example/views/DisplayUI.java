@@ -1,6 +1,7 @@
 package org.example.views;
 import org.example.controllers.AdminController;
 import org.example.controllers.CustomerController;
+import org.example.controllers.Kitchen;
 import org.example.controllers.Staff;
 import org.example.services.OrderService;
 import org.example.services.Utils;
@@ -32,8 +33,8 @@ public class DisplayUI {
                     staff.start();
                     break;
                 case 2:
-//                    Kitchen kitchen = new Kitchen(scanner);
-//                    kitchen.start();
+                    Kitchen kitchen = new Kitchen(scanner);
+                    kitchen.start();
                     break;
                 case 3:
                     System.out.println("Customer Section");
