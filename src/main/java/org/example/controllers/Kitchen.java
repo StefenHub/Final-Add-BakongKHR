@@ -48,31 +48,33 @@ public class Kitchen {
 
     // View all orders
     private void viewAllOrders() {
-        String query = "SELECT order_id, payment_method, total_amount, order_date, status FROM orders ORDER BY order_date DESC";
+        String query = "SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items ORDER BY order_date DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
-            Table table = new Table(5, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+            Table table = new Table(6, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Payment Method", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Total Amount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             while (rs.next()) {
                 int orderId = rs.getInt("order_id");
-                String paymentMethod = rs.getString("payment_method");
-                double totalAmount = rs.getDouble("total_amount");
+                String name = rs.getString("name");
+                int quantity = rs.getInt("quantity");
+                String size = rs.getString("size");
+                String description = rs.getString("description");
                 Timestamp orderDate = rs.getTimestamp("order_date");
-                String status = rs.getString("status");
-
                 table.addCell(String.valueOf(orderId), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(paymentMethod, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(String.format("$%.2f", totalAmount), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(name, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(String.valueOf(quantity), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(size, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(description, new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(orderDate.toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(status, new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
             System.out.println("\n--- All Orders ---");
@@ -86,29 +88,33 @@ public class Kitchen {
 
     // View pending orders
     private void viewPendingOrders() {
-        String query = "SELECT order_id, payment_method, total_amount, order_date FROM orders WHERE status = 'Pending' ORDER BY order_date ASC";
+        String query = "SELECT order_id, name, size , quantity, description, order_date FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
-
-            Table table = new Table(4, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+            Table table = new Table(6, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Payment Method", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Total Amount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
                 int orderId = rs.getInt("order_id");
-                String paymentMethod = rs.getString("payment_method");
-                double totalAmount = rs.getDouble("total_amount");
+                String name = rs.getString("name");
+                String size = rs.getString("size");
+                int quantity = rs.getInt("quantity");
+                String description = rs.getString("description");
                 Timestamp orderDate = rs.getTimestamp("order_date");
-
                 table.addCell(String.valueOf(orderId), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(paymentMethod, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(String.format("$%.2f", totalAmount), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(name, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(size, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(String.valueOf(quantity), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(description, new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(orderDate.toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
@@ -153,7 +159,7 @@ public class Kitchen {
                 return;
         }
 
-        String query = "UPDATE orders SET status = ? WHERE order_id = ?";
+        String query = "UPDATE orders SET order_status = ? WHERE order_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
