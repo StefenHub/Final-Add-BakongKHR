@@ -1,5 +1,7 @@
 package org.example.controllers;
 import org.example.services.OrderService;
+import org.example.services.PaymentService;
+
 import java.util.*;
 
 import static org.example.services.MenuItemManager.viewMenuItemsCustomer;
@@ -7,10 +9,12 @@ import static org.example.services.MenuItemManager.viewMenuItemsCustomer;
 public class CustomerController {
     private Scanner scanner = new Scanner(System.in);
     private OrderService orderService = new OrderService();
+    private PaymentService paymentService = new PaymentService();
 
     public CustomerController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
         this.orderService = orderService;
+        this.paymentService = paymentService;
     }
 
     public void start() {
@@ -151,7 +155,7 @@ public class CustomerController {
         }
 
         System.out.println("\n--- Payment Process ---");
-        System.out.println("Payment Method: QR Code");
+        paymentService.processPaymentCustomer();
 
         int paymentMethod = 1; // QR Code is the only option
         int orderId = orderService.placeOrder(paymentMethod);
@@ -167,7 +171,6 @@ public class CustomerController {
         } else {
             System.out.println("Payment failed. Please try again.");
         }
-
     }
 
     private boolean confirmOrder() {
@@ -194,5 +197,11 @@ public class CustomerController {
                 System.out.println("❌ Invalid input. Please enter a valid numeric value.");
             }
         }
+    }
+
+    // test customer controller
+    public static void main(String[] args) {
+        CustomerController customerController = new CustomerController(new Scanner(System.in), new OrderService());
+        customerController.start();
     }
 }

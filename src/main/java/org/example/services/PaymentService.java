@@ -11,7 +11,7 @@ public class PaymentService {
         System.out.println("Payment processed successfully!");
     }
 
-    public void processPaymentCustomer(int paymentMethod) {
+    public void processPaymentCustomer() {
         System.out.println("Processing payment through KHQR...");
         QRCodePayment();
         System.out.println("Payment processed successfully!");
