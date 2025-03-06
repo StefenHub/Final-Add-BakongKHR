@@ -14,55 +14,55 @@ public class StaffManager {
     public static void addStaff(Scanner scanner) {
         String full_name;
         do {
-            System.out.print("Enter full name: ");
+            System.out.print("\tEnter full name: ");
             full_name = scanner.nextLine().trim();
             if (!NAME_PATTERN.matcher(full_name).matches()) {
-                System.out.println("❌ Invalid full name! Only letters and spaces are allowed.");
+                System.out.println("\t❌ Invalid full name! Only letters and spaces are allowed.");
             }
         } while (!NAME_PATTERN.matcher(full_name).matches());
 
         String userName;
         do {
-            System.out.print("Enter username: ");
+            System.out.print("\tEnter username: ");
             userName = scanner.nextLine().trim();
             if (!USERNAME_PATTERN.matcher(userName).matches()) {
-                System.out.println("❌ Invalid username! Must be lowercase letters and numbers only.");
+                System.out.println("\t❌ Invalid username! Must be lowercase letters and numbers only.");
             }
         } while (!USERNAME_PATTERN.matcher(userName).matches());
 
         String password;
         do {
-            System.out.print("Enter password: ");
+            System.out.print("\tEnter password: ");
             password = scanner.nextLine().trim();
             if (!PASSWORD_PATTERN.matcher(password).matches()) {
-                System.out.println("❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character.");
+                System.out.println("\t❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character.");
             }
         } while (!PASSWORD_PATTERN.matcher(password).matches());
 
         String email;
         do {
-            System.out.print("Enter email: ");
+            System.out.print("\tEnter email: ");
             email = scanner.nextLine().trim();
             if (!EMAIL_PATTERN.matcher(email).matches()) {
-                System.out.println("❌ Invalid email! Must start with a letter and end with @gmail.com.");
+                System.out.println("\t❌ Invalid email! Must start with a letter and end with @gmail.com.");
             }
         } while (!EMAIL_PATTERN.matcher(email).matches());
 
         String phone_number;
         do {
-            System.out.print("Enter phone number: ");
+            System.out.print("\tEnter phone number: ");
             phone_number = scanner.nextLine().trim();
             if (!PHONE_PATTERN.matcher(phone_number).matches()) {
-                System.out.println("❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+                System.out.println("\t❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
             }
         } while (!PHONE_PATTERN.matcher(phone_number).matches());
 
         String role;
         do {
-            System.out.print("Enter role: ");
+            System.out.print("\tEnter role: ");
             role = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(role.toLowerCase())) {
-                System.out.println("❌ Invalid role! Must be one of: staff, admin, kitchen.");
+                System.out.println("\t❌ Invalid role! Must be one of: staff, admin, kitchen.");
             }
         } while (!VALID_ROLES.contains(role.toLowerCase()));
 
@@ -82,40 +82,40 @@ public class StaffManager {
             pstmt.setString(7, role);
             pstmt.setTimestamp(8, timestamp);
             pstmt.executeUpdate();
-            System.out.println("Staff added successfully!");
+            System.out.println("\tStaff added successfully!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public static void updateStaff(Scanner scanner) {
-        System.out.print("Enter staff UUID: ");
+        System.out.print("\tEnter staff UUID: ");
         UUID uuid = UUID.fromString(scanner.nextLine().trim());
 
         String newName;
         do {
-            System.out.print("Enter new full name: ");
+            System.out.print("\tEnter new full name: ");
             newName = scanner.nextLine().trim();
             if (!NAME_PATTERN.matcher(newName).matches()) {
-                System.out.println("❌ Invalid full name! Only letters and spaces are allowed.");
+                System.out.println("\t❌ Invalid full name! Only letters and spaces are allowed.");
             }
         } while (!NAME_PATTERN.matcher(newName).matches());
 
         String newPhone;
         do {
-            System.out.print("Enter new phone: ");
+            System.out.print("\tEnter new phone: ");
             newPhone = scanner.nextLine().trim();
             if (!PHONE_PATTERN.matcher(newPhone).matches()) {
-                System.out.println("❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+                System.out.println("\t❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
             }
         } while (!PHONE_PATTERN.matcher(newPhone).matches());
 
         String newRole;
         do {
-            System.out.print("Enter new role: ");
+            System.out.print("\tEnter new role: ");
             newRole = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(newRole.toLowerCase())) {
-                System.out.println("❌ Invalid role! Must be one of: staff, admin, kitchen.");
+                System.out.println("\t❌ Invalid role! Must be one of: staff, admin, kitchen.");
             }
         } while (!VALID_ROLES.contains(newRole.toLowerCase()));
 
@@ -132,9 +132,9 @@ public class StaffManager {
             pstmt.setObject(4, uuid);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
-                System.out.println("Staff updated successfully!");
+                System.out.println("\tStaff updated successfully!");
             } else {
-                System.out.println("Staff not found!");
+                System.out.println("\tStaff not found!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -148,9 +148,9 @@ public class StaffManager {
             pstmt.setObject(1, uuid);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
-                System.out.println("Staff removed successfully!");
+                System.out.println("\tStaff removed successfully!");
             } else {
-                System.out.println("Staff not found!");
+                System.out.println("\tStaff not found!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -159,14 +159,20 @@ public class StaffManager {
 
     public static void manageStaff(Scanner scanner) {
         while (true) {
-            System.out.println("\n--- Staff Management ---");
-            System.out.println("1. Add Staff");
-            System.out.println("2. View All Staff");
-            System.out.println("3. Update Staff");
-            System.out.println("4. Remove Staff");
-            System.out.println("5. Exit");
+            System.out.print("""
+                                \u001B[34m
+                                ╔════════════════════════════════════╗
+                                ║       👥 Staff Management          ║
+                                ╠════════════════════════════════════╣
+                                ║   \u001B[33m[1]. ➕ Add Staff\u001B[34m                ║
+                                ║   \u001B[33m[2]. 👀 View All Staff\u001B[34m           ║
+                                ║   \u001B[33m[3]. ✏️ Update Staff\u001B[34m             ║
+                                ║   \u001B[33m[4]. 🗑️ Remove Staff\u001B[34m             ║
+                                ║   \u001B[31m[5]. ❌ Exit\u001B[34m                     ║
+                                ╚════════════════════════════════════╝ \u001B[0m
+                            """);
 
-            int choice = Utils.validateIntegerInput(scanner, "Enter your choice: ", 1, 5);
+            int choice = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 5);
             switch (choice) {
                 case 1:
                     addStaff(scanner);
@@ -178,7 +184,7 @@ public class StaffManager {
                     updateStaff(scanner);
                     break;
                 case 4:
-                    System.out.print("Enter staff UUID: ");
+                    System.out.print("\tEnter staff UUID: ");
                     UUID uuidToRemove = UUID.fromString(scanner.nextLine().trim());
                     removeStaff(uuidToRemove);
                     break;

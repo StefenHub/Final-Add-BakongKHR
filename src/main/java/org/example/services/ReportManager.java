@@ -22,13 +22,13 @@ public class ReportManager {
             pstmt.setDate(1, Date.valueOf(startDate));
             pstmt.setDate(2, Date.valueOf(endDate));
 
-            System.out.println("\nFetching sales report for date range: " + startDate + " to " + endDate);
+            //System.out.println("\n\tFetching sales report for date range: " + startDate + " to " + endDate);
 
             ResultSet rs = pstmt.executeQuery();
 
-            System.out.println("\n--- Sales Report ---");
-            System.out.printf("%-10s %-30s %-15s %-15s%n", "Item ID", "Name", "Quantity Sold", "Total Sales");
-            System.out.println("---------------------------------------------------------------");
+            System.out.println("\n\t--- Sales Report ---");
+            System.out.printf("\t%-10s %-30s %-15s %-15s%n", "Item ID", "Name", "Quantity Sold","Discount", "Total Sales");
+            System.out.println("\t---------------------------------------------------------------");
 
             boolean hasData = false;
             while (rs.next()) {
@@ -36,16 +36,17 @@ public class ReportManager {
                 int itemId = rs.getInt("item_id");
                 String name = rs.getString("name");
                 int totalQuantity = rs.getInt("total_quantity");
+                double discount = rs.getDouble("discount");
                 double totalSales = rs.getDouble("total_sales");
 
                 System.out.printf("%-10d %-30s %-15d $%-15.2f%n", itemId, name, totalQuantity, totalSales);
             }
 
             if (!hasData) {
-                System.out.println("No sales data available for the specified period.");
+                System.out.println("\tNo sales data available for the specified period.");
             }
         } catch (SQLException e) {
-            System.out.println("❌ An error occurred while generating the sales report.");
+            System.out.println("\t❌ An error occurred while generating the sales report.");
             e.printStackTrace();
         }
     }
@@ -62,19 +63,19 @@ public class ReportManager {
             pstmt.setDate(1, Date.valueOf(startDate));
             pstmt.setDate(2, Date.valueOf(endDate));
 
-            System.out.println("\nFetching revenue report for date range: " + startDate + " to " + endDate);
+            //System.out.println("\n\tFetching revenue report for date range: " + startDate + " to " + endDate);
 
             ResultSet rs = pstmt.executeQuery();
 
-            System.out.println("\n--- Revenue Report ---");
+            System.out.println("\n\t--- Revenue Report ---");
             if (rs.next()) {
                 double totalRevenue = rs.getDouble("total_revenue");
-                System.out.printf("Total Revenue from %s to %s: $%.2f%n", startDate, endDate, totalRevenue);
+                System.out.printf("\tTotal Revenue from %s to %s: $%.2f%n", startDate, endDate, totalRevenue);
             } else {
-                System.out.println("No revenue data available for the specified period.");
+                System.out.println("\tNo revenue data available for the specified period.");
             }
         } catch (SQLException e) {
-            System.out.println("❌ An error occurred while generating the revenue report.");
+            System.out.println("\t❌ An error occurred while generating the revenue report.");
             e.printStackTrace();
         }
     }
@@ -91,24 +92,24 @@ public class ReportManager {
             pstmt.setDate(1, Date.valueOf(startDate));
             pstmt.setDate(2, Date.valueOf(endDate));
 
-            System.out.println("\nFetching profit report for date range: " + startDate + " to " + endDate);
-            System.out.println("Executing SQL: " + pstmt.toString());
+            //System.out.println("\n\tFetching profit report for date range: " + startDate + " to " + endDate);
+            //System.out.println("\tExecuting SQL: " + pstmt.toString());
 
             ResultSet rs = pstmt.executeQuery();
 
-            System.out.println("\n--- Profit Report ---");
+            System.out.println("\n\t--- Profit Report ---");
             if (rs.next()) {
                 double totalProfit = rs.getDouble("total_profit");
                 if (totalProfit == 0) {
-                    System.out.println("No profit generated for the specified period.");
+                    System.out.println("\tNo profit generated for the specified period.");
                 } else {
-                    System.out.printf("Total Profit from %s to %s: $%.2f%n", startDate, endDate, totalProfit);
+                    System.out.printf("\tTotal Profit from %s to %s: $%.2f%n", startDate, endDate, totalProfit);
                 }
             } else {
-                System.out.println("No profit data available for the specified period.");
+                System.out.println("\tNo profit data available for the specified period.");
             }
         } catch (SQLException e) {
-            System.out.println("❌ An error occurred while generating the profit report.");
+            System.out.println("\t❌ An error occurred while generating the profit report.");
             e.printStackTrace();
         }
     }
@@ -116,19 +117,19 @@ public class ReportManager {
     private static LocalDate[] promptForDateRange(Scanner scanner) {
         while (true) {
             try {
-                System.out.print("Enter start date (YYYY-MM-DD): ");
+                System.out.print("\tEnter start date (YYYY-MM-DD): ");
                 LocalDate startDate = LocalDate.parse(scanner.nextLine().trim());
-                System.out.print("Enter end date (YYYY-MM-DD): ");
+                System.out.print("\tEnter end date (YYYY-MM-DD): ");
                 LocalDate endDate = LocalDate.parse(scanner.nextLine().trim());
 
                 if (startDate.isAfter(endDate)) {
-                    System.out.println("❌ Start date cannot be after end date. Please try again.");
+                    System.out.println("\t❌ Start date cannot be after end date. Please try again.");
                     continue;
                 }
 
                 return new LocalDate[]{startDate, endDate};
             } catch (Exception e) {
-                System.out.println("❌ Invalid date format. Please enter the date in YYYY-MM-DD format.");
+                System.out.println("\t❌ Invalid date format. Please enter the date in YYYY-MM-DD format.");
             }
         }
     }
@@ -137,13 +138,20 @@ public class ReportManager {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\n--- Report Management ---");
-            System.out.println("1. Generate Sales Report");
-            System.out.println("2. Generate Revenue Report");
-            System.out.println("3. Generate Profit Report");
-            System.out.println("4. Back to Main Menu");
+            System.out.print("""
+                                \u001B[34m
+                                ╔════════════════════════════════════╗
+                                ║       📊 Report Management         ║
+                                ╠════════════════════════════════════╣
+                                ║   \u001B[33m[1]. 💰 Generate Sales Report\u001B[34m     ║
+                                ║   \u001B[33m[2]. 💵 Generate Revenue Report\u001B[34m   ║
+                                ║   \u001B[33m[3]. 📈 Generate Profit Report\u001B[34m    ║
+                                ║   \u001B[31m[4]. 🔙 Back to Main Menu\u001B[34m         ║
+                                ╚════════════════════════════════════╝ \u001B[0m
+                            """);
 
-            int choice = Utils.validateIntegerInput(scanner, "Enter your choice: ", 1, 4);
+
+            int choice = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 4);
             if (choice == -1) return;
 
             switch (choice) {
@@ -162,7 +170,7 @@ public class ReportManager {
                 case 4:
                     return;
                 default:
-                    System.out.println("Invalid choice! Please try again.");
+                    System.out.println("\tInvalid choice! Please try again.");
             }
         }
     }

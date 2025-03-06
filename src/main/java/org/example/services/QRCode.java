@@ -27,26 +27,23 @@ public class QRCode {
 
     private JFrame frame;
     private JLabel statusLabel;
-    private JProgressBar progressBar;
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-
     public static void QRCodePayment() {
         try {
             new QRCode().generateAndDisplayQRCode();
         } catch (WriterException e) {
-            System.out.println("❌ Error: Failed to generate QR Code: " + e.getMessage());
+            System.out.println("\t❌ Error: Failed to generate QR Code: " + e.getMessage());
         }
     }
 
     public void generateAndDisplayQRCode() throws WriterException {
         IndividualInfo individualInfo = new IndividualInfo();
-        individualInfo.setAccountInformation("010513288");
-        individualInfo.setBakongAccountId("dina_pisethi31@aclb");
-        individualInfo.setAcquiringBank("ABA");
+        individualInfo.setAccountInformation("\t010513288");
+        individualInfo.setBakongAccountId("\tdina_pisethi31@aclb");
+        individualInfo.setAcquiringBank("\tABA");
         individualInfo.setCurrency(KHQRCurrency.USD);
         individualInfo.setAmount(0.01);
-        individualInfo.setMerchantName("ROS Cambodia");
-        individualInfo.setMerchantCity("Phnom Penh");
+        individualInfo.setMerchantName("\tROS Cambodia");
+        individualInfo.setMerchantCity("\tPhnom Penh");
 
         KHQRResponse<KHQRData> response = BakongKHQR.generateIndividual(individualInfo);
 
@@ -73,13 +70,13 @@ public class QRCode {
     }
 
     private void displayQRPopup(BufferedImage image, String md5) {
-        frame = new JFrame("Scan QR Code");
+        frame = new JFrame("\tScan QR Code");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         JLabel qrLabel = new JLabel(new ImageIcon(image));
-        statusLabel = new JLabel("Waiting for Payment...", SwingConstants.CENTER);
-        statusLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        statusLabel = new JLabel("\tWaiting for Payment...", SwingConstants.CENTER);
+        statusLabel.setFont(new Font("\tArial", Font.BOLD, 14));
 
         frame.add(qrLabel, BorderLayout.CENTER);
         frame.add(statusLabel, BorderLayout.SOUTH);
@@ -92,7 +89,7 @@ public class QRCode {
 
     private void waitForPayment(String md5) {
         int attempts = 0;
-        int waitTime = 500; // Start with 500ms
+        int waitTime = 5000; // Start with 500ms
         int maxAttempts = 90 * 1000 / waitTime; // 90 seconds timeout
 
         while (attempts < maxAttempts) {
@@ -101,14 +98,13 @@ public class QRCode {
 
                 if (validateMd5(md5)) {
                     SwingUtilities.invokeLater(() -> {
-                        statusLabel.setText("✅ Payment Successful!");
-                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        statusLabel.setText("\t✅ Payment Successful!");
+                        JOptionPane.showMessageDialog(frame, "\tPayment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         frame.dispose();
                     });
                     return;
                 }
 
-                // Increase wait time after failed attempts (exponential backoff)
                 waitTime = Math.min(waitTime * 2, 5000); // Max wait time = 5s
 
             } catch (InterruptedException e) {
@@ -118,8 +114,8 @@ public class QRCode {
         }
 
         SwingUtilities.invokeLater(() -> {
-            statusLabel.setText("❌ Payment Timed Out");
-            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+            statusLabel.setText("\t❌ Payment Timed Out");
+            JOptionPane.showMessageDialog(frame, "\tPayment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
             frame.dispose();
         });
     }
@@ -137,8 +133,8 @@ public class QRCode {
             while (attempt < maxAttempts) {
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                         .uri(URI.create(API_URL))
-                        .header("Authorization", AUTH_TOKEN)
-                        .header("Content-Type", "application/json")
+                        .header("\tAuthorization", AUTH_TOKEN)
+                        .header("\tContent-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                         .build();
 
@@ -150,23 +146,23 @@ public class QRCode {
                     String responseMessage = jsonResponse.path("responseMessage").asText();
 
                     if (responseCode == 0) {
-                        System.out.println("✅ Success: " + responseMessage);
-                        System.out.println("🔹 Data: " + jsonResponse.path("data").toPrettyString());
+                        System.out.println("\t✅ Success: " + responseMessage);
+                        System.out.println("\t🔹 Data: " + jsonResponse.path("data").toPrettyString());
                         return true;
                     } else {
-                        System.out.println("⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
+                        System.out.println("\t⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
                     }
                 } else {
-                    System.out.println("❌ API Error: " + response.statusCode() + " - " + response.body());
+                    System.out.println("\t❌ API Error: " + response.statusCode() + " - " + response.body());
                 }
 
                 attempt++;
                 TimeUnit.SECONDS.sleep(interval);
             }
 
-            System.out.println("⏳ Transaction validation failed after multiple attempts.");
+            System.out.println("\t⏳ Transaction validation failed after multiple attempts.");
         } catch (Exception e) {
-            System.err.println("Exception: " + e.getMessage());
+            System.err.println("\tException: " + e.getMessage());
         }
 
         return false;

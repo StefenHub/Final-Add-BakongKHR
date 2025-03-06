@@ -21,11 +21,18 @@ public class Kitchen {
     public void start() {
         while (true) {
             System.out.println("\n--- Kitchen Menu ---");
-            System.out.println("1. View All Orders");
-            System.out.println("2. View Pending Orders");
-            System.out.println("3. Update Order Status");
-            System.out.println("4. Exit");
-
+            System.out.print("""
+                         \u001B[34m
+                         ╔════════════════════════════════╗
+                         ║      ‍🍳 Kitchen Dashboard      ║ 
+                         ╠════════════════════════════════╣
+                         ║   \u001B[33m[1]. 📋 View All Orders\u001B[34m      ║
+                         ║   \u001B[33m[2]. ⏳ View Pending Orders\u001B[34m  ║
+                         ║   \u001B[33m[3]. 🔄 Update Order Status\u001B[34m  ║
+                         ║   \u001B[31m[4]. ❌ Exit\u001B[34m                 ║
+                         ╚════════════════════════════════╝
+                      \u001B[0m
+             """);
             int choice = validateIntegerInput(scanner, "Enter your choice: ", 1, 4);
             switch (choice) {
                 case 1:
@@ -140,11 +147,17 @@ public class Kitchen {
     private void updateOrderStatus() {
         System.out.print("Enter the Order ID to update status: ");
         int orderId = validateIntegerInput(scanner, "Enter the Order ID: ", 1, Integer.MAX_VALUE);
+        System.out.print("""
+                        \u001B[34m╔═════════════════════════════════╗
+                        ║  \u001B[36m         Status Options   \u001B[34m       ║
+                        ╠═════════════════════════════════╣
+                        ║   \u001B[33m[1]. 🔄 Preparing\u001B[34m               ║
+                        ║   \u001B[33m[2]. ✅ Ready\u001B[34m                   ║
+                        ║   \u001B[33m[3]. 🎉 Completed\u001B[34m               ║
+                        ╚═════════════════════════════════╝
+                        \u001B[0m
+                    """);
 
-        System.out.println("Select the new status:");
-        System.out.println("1. Preparing");
-        System.out.println("2. Ready");
-        System.out.println("3. Completed");
 
         int statusChoice = validateIntegerInput(scanner, "Enter your choice: ", 1, 3);
         String newStatus = "";

@@ -19,7 +19,7 @@ public class CategoryManager {
         List<String> categories = new ArrayList<>();
         try (Connection conn = DatabaseConnection.connect()) {
             if (conn == null) {
-                System.out.println("❌ Failed to connect to the database.");
+                System.out.println("\t❌ Failed to connect to the database.");
                 return categories;
             }
 
@@ -32,7 +32,7 @@ public class CategoryManager {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("❌ Database error: " + e.getMessage());
+            System.out.println("\t❌ Database error: " + e.getMessage());
         }
         return categories;
     }
@@ -41,7 +41,7 @@ public class CategoryManager {
     public static void displayCategories() {
         List<String> categories = getCategories();
         if (categories.isEmpty()) {
-            System.out.println("No categories available.");
+            System.out.println("\tNo categories available.");
             return;
         }
 
@@ -67,22 +67,22 @@ public class CategoryManager {
 
     // Add categories
     public static void addCategory(Scanner scanner) {
-        System.out.print("Enter the name of the new category ([b] to go back): ");
+        System.out.print("\tEnter the name of the new category ([b] to go back): ");
         String newCategory = scanner.nextLine().trim();
 
         if (newCategory.equalsIgnoreCase("b")) return;
         if (newCategory.isEmpty()) {
-            System.out.println("❌ Category name cannot be empty.");
+            System.out.println("\t❌ Category name cannot be empty.");
             return;
         }
         if (!newCategory.matches("[a-zA-Z0-9\\s]+")) {
-            System.out.println("❌ Invalid category name. Only alphanumeric characters and spaces are allowed.");
+            System.out.println("\t❌ Invalid category name. Only alphanumeric characters and spaces are allowed.");
             return;
         }
 
         try (Connection conn = DatabaseConnection.connect()) {
             if (conn == null) {
-                System.out.println("❌ Failed to connect to the database.");
+                System.out.println("\t❌ Failed to connect to the database.");
                 return;
             }
 
@@ -91,13 +91,13 @@ public class CategoryManager {
                 pstmt.setString(1, newCategory);
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
-                    System.out.println("✅ Category '" + newCategory + "' added successfully!");
+                    System.out.println("\t✅ Category '" + newCategory + "' added successfully!");
                 } else {
-                    System.out.println("⚠️ Category already exists.");
+                    System.out.println("\t⚠️ Category already exists.");
                 }
             }
         } catch (SQLException e) {
-            System.out.println("❌ Database error: " + e.getMessage());
+            System.out.println("\t❌ Database error: " + e.getMessage());
         }
     }
 
@@ -107,25 +107,25 @@ public class CategoryManager {
         List<String> categories = getCategories();
         if (categories.isEmpty()) return;
 
-        int categoryNumber = Utils.validateIntegerInput(scanner, "Enter the number of the category to remove ([b] to go back): ", 1, categories.size());
+        int categoryNumber = Utils.validateIntegerInput(scanner, "\tEnter the number of the category to remove ([b] to go back): ", 1, categories.size());
         if (categoryNumber == -1) return;
 
         String categoryToRemove = getCategoryFromNumber(categoryNumber);
         if (categoryToRemove.equals("Unknown")) {
-            System.out.println("❌ Invalid category number.");
+            System.out.println("\t❌ Invalid category number.");
             return;
         }
 
-        System.out.print("Are you sure you want to remove the category '" + categoryToRemove + "' and all its items? (y/n): ");
+        System.out.print("\tAre you sure you want to remove the category '" + categoryToRemove + "' and all its items? (y/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
         if (!confirm.equals("y")) {
-            System.out.println("⚠️ Removal canceled.");
+            System.out.println("\t⚠️ Removal canceled.");
             return;
         }
 
         try (Connection conn = DatabaseConnection.connect()) {
             if (conn == null) {
-                System.out.println("❌ Failed to connect to the database.");
+                System.out.println("\t❌ Failed to connect to the database.");
                 return;
             }
 
@@ -142,26 +142,32 @@ public class CategoryManager {
                 pstmt.setString(1, categoryToRemove);
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
-                    System.out.println("✅ Category '" + categoryToRemove + "' and all its items removed successfully!");
+                    System.out.println("\t✅ Category '" + categoryToRemove + "' and all its items removed successfully!");
                 } else {
-                    System.out.println("❌ Failed to remove category.");
+                    System.out.println("\t❌ Failed to remove category.");
                 }
             }
         } catch (SQLException e) {
-            System.out.println("❌ Database error: " + e.getMessage());
+            System.out.println("\t❌ Database error: " + e.getMessage());
         }
     }
 
     // Manage categories
     public static void manageCategories(Scanner scanner) {
         while (true) {
-            System.out.println("\n--- Manage Categories ---");
-            System.out.println("1. Add Category");
-            System.out.println("2. Remove Category");
-            System.out.println("3. View Categories");
-            System.out.println("4. Back");
+            System.out.print("""
+                                \u001B[34m
+                                ╔════════════════════════════════════╗
+                                ║       🏷️ Manage Categories         ║
+                                ╠════════════════════════════════════╣
+                                ║   \u001B[33m[1]. ➕ Add Category\u001B[34m             ║
+                                ║   \u001B[33m[2]. 🗑️ Remove Category\u001B[34m          ║
+                                ║   \u001B[33m[3]. 👀 View Categories\u001B[34m          ║
+                                ║   \u001B[33m[4]. 🔙 Back\u001B[34m                     ║
+                                ╚════════════════════════════════════╝ \u001B[0m
+                            """);
 
-            int choice = Utils.validateIntegerInput(scanner, "Enter your choice ([b] to go back): ", 1, 4);
+            int choice = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice ([b] to go back): ", 1, 4);
             if (choice == -1) return;
 
             switch (choice) {
@@ -177,7 +183,7 @@ public class CategoryManager {
                 case 4:
                     return;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("\tInvalid choice. Please try again.");
             }
         }
     }

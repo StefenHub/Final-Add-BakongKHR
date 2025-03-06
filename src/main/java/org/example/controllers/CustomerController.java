@@ -18,24 +18,29 @@ public class CustomerController {
 
     public void start() {
         while (true) {
-            System.out.println("\n--- Customer Menu ---");
-            System.out.println("1. View All Items by Category");
-            System.out.println("2. Order Now");
-            System.out.println("3. View Cart");
-            System.out.println("4. Confirm and Pay");
-            System.out.println("5. Exit");
+            System.out.print("""
+                        \u001B[34m╔═════════════════════════════════════════╗
+                        ║  \u001B[36m         Welcome to Our Shop     \u001B[34m      ║
+                        ╠═════════════════════════════════════════╣
+                        ║   \u001B[33m[1]. 📂 View All Items by Category\u001B[34m    ║ 
+                        ║   \u001B[33m[2]. 🛒 Order Now\u001B[34m                     ║ 
+                        ║   \u001B[33m[3]. 🛍️ View Cart\u001B[34m                     ║ 
+                        ║   \u001B[33m[4]. 💳 Confirm and Pay\u001B[34m               ║ 
+                        ║   \u001B[31m[5]. ❌ Exit\u001B[34m                          ║ 
+                        ╚═════════════════════════════════════════╝ \u001B[0m
+                    """);
 
-            int choice = validateIntegerInput("Enter your choice: ", 5);
+            int choice = validateIntegerInput("\t👉 Enter your choice: ", 5);
             switch (choice) {
                 case 1 -> CustomerMenuViewer.viewMenuItemsCustomer();
                 case 2 -> addItemToCart();
                 case 3 -> viewCartWithEditOptions();
                 case 4 -> confirmAndPay();
                 case 5 -> {
-                    System.out.println("Thank you for visiting! Goodbye!");
+                    System.out.println("\tThank you for visiting! Goodbye!");
                     return;
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
+                default -> System.out.println("\tInvalid choice. Please try again.");
             }
         }
     }
@@ -44,42 +49,42 @@ public class CustomerController {
         while (true) {
             List<String> categories = orderService.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("No categories available.");
+                System.out.println("\tNo categories available.");
                 return;
             }
 
-            System.out.println("\n--- Select a Category ---");
+            System.out.println("\n\t--- Select a Category ---");
             for (int i = 0; i < categories.size(); i++) {
                 System.out.println((i + 1) + ". " + categories.get(i));
             }
 
-            int categoryChoice = validateIntegerInput("Enter the category number ([b] to go back): ", categories.size());
+            int categoryChoice = validateIntegerInput("\tEnter the category number ([b] to go back): ", categories.size());
             if (categoryChoice == -1) break;
 
             String selectedCategory = categories.get(categoryChoice - 1);
             orderService.displayItemsByCategory(selectedCategory);
 
-            System.out.print("Enter the ID of the item to add to your cart ([b] to go back): ");
+            System.out.print("\tEnter the ID of the item to add to your cart ([b] to go back): ");
             String input = scanner.nextLine().trim();
             if (input.equalsIgnoreCase("b")) continue;
 
             try {
                 int itemId = Integer.parseInt(input);
-                int quantity = validateIntegerInput("Enter the quantity: ", 100);
+                int quantity = validateIntegerInput("\tEnter the quantity: ", 100);
 
                 Map<String, Object> item = orderService.getItemById(itemId);
                 if (item == null) {
-                    System.out.println("Invalid item ID. No item found.");
+                    System.out.println("\tInvalid item ID. No item found.");
                     continue;
                 }
 
                 orderService.addItemToCart(item, quantity);
-                System.out.println("Item added to cart successfully!");
+                System.out.println("\tItem added to cart successfully!");
 
-                System.out.print("Do you want to add another item? (y/n): ");
+                System.out.print("\tDo you want to add another item? (y/n): ");
                 if (!scanner.nextLine().trim().equalsIgnoreCase("y")) break;
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid numeric value.");
+                System.out.println("\tInvalid input. Please enter a valid numeric value.");
             }
         }
     }
@@ -89,91 +94,96 @@ public class CustomerController {
             int orderId = 123;
             orderService.viewCart();
             if (orderService.isCartEmpty()) {
-                System.out.println("Your cart is empty. Nothing to edit.");
+                System.out.println("\t\tYour cart is empty. Nothing to edit.");
                 return;
             }
 
-            System.out.println("\n--- Cart Options ---");
-            System.out.println("1. Edit Quantity of an Item");
-            System.out.println("2. Remove an Item from Cart");
-            System.out.println("3. Go Back");
-
-            int cartOption = validateIntegerInput("Enter your choice: ", 3);
+            System.out.print("""
+                                \u001B[34m
+                                ╔════════════════════════════════════╗
+                                ║             Cart Options            ║
+                                ╠════════════════════════════════════╣
+                                ║   \u001B[33m[1]. ✏️ Edit Quantity of an Item\u001B[34m ║
+                                ║   \u001B[33m[2]. 🗑️ Remove an Item from Cart\u001B[34m ║
+                                ║   \u001B[31m[3]. 🔙 Go Back\u001B[34m                  ║
+                                ╚════════════════════════════════════╝\u001B[0m
+                            """);
+            int cartOption = validateIntegerInput("\t👉 Enter your choice: ", 3);
             switch (cartOption) {
                 case 1 -> editQuantityInCart();
                 case 2 -> removeItemFromCart();
                 case 3 -> {
                     return;
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
+                default -> System.out.println("\tInvalid choice. Please try again.");
             }
         }
     }
 
     private void editQuantityInCart() {
-        System.out.print("Enter the ID of the item to edit quantity ([b] to go back): ");
+        System.out.print("\tEnter the ID of the item to edit quantity ([b] to go back): ");
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("b")) return;
 
         try {
             int itemId = Integer.parseInt(input);
-            int newQuantity = validateIntegerInput("Enter the new quantity: ", 100);
+            int newQuantity = validateIntegerInput("\tEnter the new quantity: ", 100);
 
             if (orderService.updateCartItemQuantity(itemId, newQuantity)) {
-                System.out.println("Quantity updated successfully!");
+                System.out.println("\tQuantity updated successfully!");
             } else {
-                System.out.println("Invalid item ID. No changes made.");
+                System.out.println("\tInvalid item ID. No changes made.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a valid numeric value.");
+            System.out.println("\tInvalid input. Please enter a valid numeric value.");
         }
     }
 
     private void removeItemFromCart() {
-        System.out.print("Enter the ID of the item to remove ([b] to go back): ");
+        System.out.print("\tEnter the ID of the item to remove ([b] to go back): ");
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("b")) return;
 
         try {
             int itemId = Integer.parseInt(input);
             if (orderService.removeItemFromCart(itemId)) {
-                System.out.println("Item removed from cart successfully!");
+                System.out.println("\tItem removed from cart successfully!");
             } else {
-                System.out.println("Invalid item ID. No changes made.");
+                System.out.println("\tInvalid item ID. No changes made.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a valid numeric value.");
+            System.out.println("\tInvalid input. Please enter a valid numeric value.");
         }
     }
 
     private void confirmAndPay() {
         orderService.viewCart();
         if (!confirmOrder()) {
-            System.out.println("Order canceled.");
+            System.out.println("\tOrder canceled.");
             return;
         }
 
-        System.out.println("\n--- Payment Process ---");
+        System.out.println("\t\n--- Payment Process ---");
         paymentService.processPaymentCustomer();
 
         int paymentMethod = 1; // QR Code is the only option
         int orderId = orderService.placeOrder(paymentMethod);
 
         if (orderId == -1) {
-            System.out.println("Failed to place order. Please try again.");
+            System.out.println("\t\tFailed to place order. Please try again.");
             return;
         }
 
         if (orderService.processPayment(orderId, paymentMethod)) {
             orderService.generateReceipt(orderId, paymentMethod);
-            System.out.println("Payment successful. Thank you for your order!");
+            System.out.println("\tPayment successful. Thank you for your order!");
         } else {
-            System.out.println("Payment failed. Please try again.");
+            System.out.println("\tPayment failed. Please try again.");
         }
     }
 
     private boolean confirmOrder() {
-        System.out.print("Do you want to confirm your order? (y/n): ");
+        System.out.print("\tDo you want to confirm your order? (y/n): ");
         return scanner.nextLine().trim().equalsIgnoreCase("y");
     }
 
@@ -190,10 +200,10 @@ public class CustomerController {
                 if (value >= 1 && value <= max) {
                     return value;
                 } else {
-                    System.out.println("❌ Input out of range. Please enter a number between " + 1 + " and " + max + ".");
+                    System.out.println("\t❌ Input out of range. Please enter a number between " + 1 + " and " + max + ".");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("❌ Invalid input. Please enter a valid numeric value.");
+                System.out.println("\t❌ Invalid input. Please enter a valid numeric value.");
             }
         }
     }

@@ -24,12 +24,17 @@ public class Staff {
     //------------------- Start the staff interaction menu -------------------
     public void start() {
         while (true) {
-            System.out.println("\n--- Staff Menu ---");
-            System.out.println("1. View All Customer Orders");
-            System.out.println("2. Place an Order for a Customer");
-            System.out.println("3. Exit");
+            System.out.print("""
+                        \u001B[34m╔═════════════════════════════════════════╗
+                        ║  \u001B[36m          🏢 Staff Dashboard      \u001B[34m     ║
+                        ╠═════════════════════════════════════════╣
+                        ║   \u001B[33m[1]. 📋 View All Customer Orders\u001B[34m      ║ 
+                        ║   \u001B[33m[2]. 🛒 Place an Order for a Customer\u001B[34m ║ 
+                        ║   \u001B[31m[3]. ❌ Exit\u001B[34m                          ║ 
+                        ╚═════════════════════════════════════════╝\u001B[0m
+                    """);
 
-            int choice = validateIntegerInput(scanner, "Enter your choice: ", 1, 3);
+            int choice = validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 3);
             switch (choice) {
                 case 1:
                     OrderManager.viewAllCustomerOrders();
@@ -40,10 +45,10 @@ public class Staff {
                     customerController.start();
                     break;
                 case 3:
-                    System.out.println("Exiting staff menu. Goodbye!");
+                    System.out.println("\tExiting staff menu. Goodbye!");
                     return;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("\tInvalid choice. Please try again.");
             }
         }
     }
@@ -75,15 +80,15 @@ public class Staff {
                 table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
-            System.out.println("\n--------- CUSTOMER ORDERS ---------");
+            System.out.println("\t\n--------- CUSTOMER ORDERS ---------");
             if (count == 1) {
-                System.out.println("No orders found.");
+                System.out.println("\tNo orders found.");
             } else {
                 System.out.println(table.render());
             }
 
         } catch (SQLException e) {
-            System.err.println("❌ Error retrieving customer orders: " + e.getMessage());
+            System.err.println("\t❌ Error retrieving customer orders: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -95,18 +100,18 @@ public class Staff {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
 
-            if (input.equalsIgnoreCase("[b]")) {
+            if (input.equalsIgnoreCase("b")) {
                 return -1;
             }
             try {
                 int value = Integer.parseInt(input);
                 if (value < min || value > max) {
-                    System.out.println("Input out of range. Please enter a number between " + min + " and " + max + ".");
+                    System.out.println("\tInput out of range. Please enter a number between " + min + " and " + max + ".");
                 } else {
                     return value;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid numeric value.");
+                System.out.println("\tInvalid input. Please enter a valid numeric value.");
             }
         }
     }
