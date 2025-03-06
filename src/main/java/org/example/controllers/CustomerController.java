@@ -1,10 +1,9 @@
 package org.example.controllers;
+import org.example.views.MenuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
 import org.example.services.PaymentService;
 
 import java.util.*;
-
-import static org.example.services.MenuItemManager.viewMenuItemsCustomer;
 
 public class CustomerController {
     private Scanner scanner = new Scanner(System.in);
@@ -28,7 +27,7 @@ public class CustomerController {
 
             int choice = validateIntegerInput("Enter your choice: ", 5);
             switch (choice) {
-                case 1 -> viewMenuItemsCustomer();
+                case 1 -> CustomerMenuViewer.viewMenuItemsCustomer();
                 case 2 -> addItemToCart();
                 case 3 -> viewCartWithEditOptions();
                 case 4 -> confirmAndPay();

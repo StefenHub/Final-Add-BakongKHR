@@ -4,7 +4,7 @@ import org.example.controllers.CustomerController;
 import org.example.controllers.Kitchen;
 import org.example.controllers.Staff;
 import org.example.services.OrderService;
-import org.example.services.Utils;
+import org.example.utils.Utils;
 
 import java.util.Scanner;
 

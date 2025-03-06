@@ -3,6 +3,9 @@ package org.example.controllers;
 import java.util.Scanner;
 
 import org.example.services.*;
+import org.example.utils.Utils;
+import org.example.views.MenuViewer.AdminMenuViewer;
+import org.example.services.UpdateMenuItem;
 import org.example.views.DisplayUI;
 
 public class AdminController {
@@ -33,7 +36,8 @@ public class AdminController {
                     break;
 
                 case 2:
-                    MenuItemManager.updateMenuItem(scanner);
+                    // Update menu item
+                    UpdateMenuItem.updateMenuItem(scanner);
                     break;
 
                 case 3:
@@ -41,7 +45,7 @@ public class AdminController {
                     break;
 
                 case 4:
-                    MenuItemManager.viewMenuItemsAdmin();
+                    AdminMenuViewer.viewMenuItemsAdmin();
                     break;
 
                 case 5:

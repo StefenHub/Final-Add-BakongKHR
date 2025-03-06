@@ -1,6 +1,7 @@
 package org.example.services;
 
 import org.example.utils.DatabaseConnection;
+import org.example.utils.Utils;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;

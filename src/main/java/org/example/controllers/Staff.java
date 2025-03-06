@@ -56,7 +56,7 @@ public class Staff {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
-            Table table = new Table(5, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
+            Table table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));

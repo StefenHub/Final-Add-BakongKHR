@@ -1,11 +1,5 @@
-package org.example.services;
-import org.nocrala.tools.texttablefmt.BorderStyle;
-import org.nocrala.tools.texttablefmt.CellStyle;
-import org.nocrala.tools.texttablefmt.ShownBorders;
-import org.nocrala.tools.texttablefmt.Table;
+package org.example.utils;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Utils {

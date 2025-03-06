@@ -1,32 +1,86 @@
 package org.example.services;
 
 import org.example.utils.DatabaseConnection;
-import org.nocrala.tools.texttablefmt.BorderStyle;
-import org.nocrala.tools.texttablefmt.CellStyle;
-import org.nocrala.tools.texttablefmt.ShownBorders;
-import org.nocrala.tools.texttablefmt.Table;
+import org.example.utils.Utils;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class StaffManager {
 
-    private static final int PAGE_SIZE = 10;
+    public static void addStaff(Scanner scanner) {
+        String full_name;
+        do {
+            System.out.print("Enter full name: ");
+            full_name = scanner.nextLine().trim();
+            if (!NAME_PATTERN.matcher(full_name).matches()) {
+                System.out.println("❌ Invalid full name! Only letters and spaces are allowed.");
+            }
+        } while (!NAME_PATTERN.matcher(full_name).matches());
 
-    // Add a new staff member
-    public static void addStaff(String uuid, String full_name, String userName, String password, String email, String phone_number, String role, Timestamp date_time_added) {
+        String userName;
+        do {
+            System.out.print("Enter username: ");
+            userName = scanner.nextLine().trim();
+            if (!USERNAME_PATTERN.matcher(userName).matches()) {
+                System.out.println("❌ Invalid username! Must be lowercase letters and numbers only.");
+            }
+        } while (!USERNAME_PATTERN.matcher(userName).matches());
+
+        String password;
+        do {
+            System.out.print("Enter password: ");
+            password = scanner.nextLine().trim();
+            if (!PASSWORD_PATTERN.matcher(password).matches()) {
+                System.out.println("❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character.");
+            }
+        } while (!PASSWORD_PATTERN.matcher(password).matches());
+
+        String email;
+        do {
+            System.out.print("Enter email: ");
+            email = scanner.nextLine().trim();
+            if (!EMAIL_PATTERN.matcher(email).matches()) {
+                System.out.println("❌ Invalid email! Must start with a letter and end with @gmail.com.");
+            }
+        } while (!EMAIL_PATTERN.matcher(email).matches());
+
+        String phone_number;
+        do {
+            System.out.print("Enter phone number: ");
+            phone_number = scanner.nextLine().trim();
+            if (!PHONE_PATTERN.matcher(phone_number).matches()) {
+                System.out.println("❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+            }
+        } while (!PHONE_PATTERN.matcher(phone_number).matches());
+
+        String role;
+        do {
+            System.out.print("Enter role: ");
+            role = scanner.nextLine().trim();
+            if (!VALID_ROLES.contains(role.toLowerCase())) {
+                System.out.println("❌ Invalid role! Must be one of: staff, admin, kitchen.");
+            }
+        } while (!VALID_ROLES.contains(role.toLowerCase()));
+
+        addStaff(UUID.randomUUID().toString(), full_name, userName, password, email, phone_number, role, Timestamp.valueOf(LocalDateTime.now()));
+    }
+
+    private static void addStaff(String string, String fullName, String userName, String password, String email, String phoneNumber, String role, Timestamp timestamp) {
         String sql = "INSERT INTO users (uuid, full_name, userName, password, email, phone_number, role, date_time_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setObject(1, UUID.randomUUID());
-            pstmt.setString(2, full_name);
+            pstmt.setObject(1, UUID.fromString(string));
+            pstmt.setString(2, fullName);
             pstmt.setString(3, userName);
-            pstmt.setString(4, password);
+            pstmt.setString(4, BCrypt.hashpw(password, BCrypt.gensalt()));
             pstmt.setString(5, email);
-            pstmt.setString(6, phone_number);
+            pstmt.setString(6, phoneNumber);
             pstmt.setString(7, role);
-            pstmt.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.setTimestamp(8, timestamp);
             pstmt.executeUpdate();
             System.out.println("Staff added successfully!");
         } catch (SQLException e) {
@@ -34,43 +88,41 @@ public class StaffManager {
         }
     }
 
-    // View all staff members
-    public static void viewAllStaff() {
-        String sql = "SELECT * FROM users";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    public static void updateStaff(Scanner scanner) {
+        System.out.print("Enter staff UUID: ");
+        UUID uuid = UUID.fromString(scanner.nextLine().trim());
 
-            Table table = new Table(9, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
-            table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("UUID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Full Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Username", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Password", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Email", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Phone Number", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Role", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Date Added", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
-            int count = 1;
-            while (rs.next()) {
-                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getObject("uuid").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("full_name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("userName"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("password"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("email"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("phone_number"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("role"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getTimestamp("date_time_added").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        String newName;
+        do {
+            System.out.print("Enter new full name: ");
+            newName = scanner.nextLine().trim();
+            if (!NAME_PATTERN.matcher(newName).matches()) {
+                System.out.println("❌ Invalid full name! Only letters and spaces are allowed.");
             }
-            System.out.println(table.render());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } while (!NAME_PATTERN.matcher(newName).matches());
+
+        String newPhone;
+        do {
+            System.out.print("Enter new phone: ");
+            newPhone = scanner.nextLine().trim();
+            if (!PHONE_PATTERN.matcher(newPhone).matches()) {
+                System.out.println("❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+            }
+        } while (!PHONE_PATTERN.matcher(newPhone).matches());
+
+        String newRole;
+        do {
+            System.out.print("Enter new role: ");
+            newRole = scanner.nextLine().trim();
+            if (!VALID_ROLES.contains(newRole.toLowerCase())) {
+                System.out.println("❌ Invalid role! Must be one of: staff, admin, kitchen.");
+            }
+        } while (!VALID_ROLES.contains(newRole.toLowerCase()));
+
+        updateStaff(uuid, newName, newPhone, newRole);
     }
 
-    public static void updateStaff(UUID uuid, String newName, String newPhone, String newRole) {
+    private static void updateStaff(UUID uuid, String newName, String newPhone, String newRole) {
         String sql = "UPDATE users SET full_name = ?, phone_number = ?, role = ? WHERE uuid = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -117,33 +169,13 @@ public class StaffManager {
             int choice = Utils.validateIntegerInput(scanner, "Enter your choice: ", 1, 5);
             switch (choice) {
                 case 1:
-                    System.out.print("Enter full name: ");
-                    String full_name = scanner.nextLine().trim();
-                    System.out.print("Enter username: ");
-                    String userName = scanner.nextLine().trim();
-                    System.out.print("Enter password: ");
-                    String password = scanner.nextLine().trim();
-                    System.out.print("Enter email: ");
-                    String email = scanner.nextLine().trim();
-                    System.out.print("Enter phone: ");
-                    String phone = scanner.nextLine().trim();
-                    System.out.print("Enter role: ");
-                    String role = scanner.nextLine().trim();
-                    addStaff(UUID.randomUUID().toString(), full_name, userName, password, email, phone, role, Timestamp.valueOf(LocalDateTime.now()));
+                    addStaff(scanner);
                     break;
                 case 2:
-                    viewAllStaff();
+//                    viewAllStaff();
                     break;
                 case 3:
-                    System.out.print("Enter staff UUID: ");
-                    UUID uuid = UUID.fromString(scanner.nextLine().trim());
-                    System.out.print("Enter new full name: ");
-                    String newName = scanner.nextLine().trim();
-                    System.out.print("Enter new phone: ");
-                    String newPhone = scanner.nextLine().trim();
-                    System.out.print("Enter new role: ");
-                    String newRole = scanner.nextLine().trim();
-                    updateStaff(uuid, newName, newPhone, newRole);
+                    updateStaff(scanner);
                     break;
                 case 4:
                     System.out.print("Enter staff UUID: ");
@@ -155,4 +187,19 @@ public class StaffManager {
             }
         }
     }
+
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z ]+$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-z0-9]+$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_.-]*@gmail\\.com$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^0\\d{8,10}$");
+    private static final Set<String> VALID_ROLES = new HashSet<>(Arrays.asList("staff", "admin", "kitchen"));
+
+    // test StaffManager
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        manageStaff(scanner);
+        scanner.close();
+    }
+
 }
