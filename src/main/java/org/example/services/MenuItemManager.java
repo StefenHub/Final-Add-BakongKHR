@@ -18,20 +18,20 @@ public class MenuItemManager {
             // Step 1: Fetch and Display Categories
             List<String> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("❌ No categories available. Please add a category first.");
+                System.out.println("\t❌ No categories available. Please add a category first.");
                 return;
             }
 
-            System.out.println("\n--- Select a Category ---");
+            System.out.println("\n\t--- Select a Category ---");
             CategoryManager.displayCategories();
 
-            int categoryChoice = Utils.validateIntegerInput(scanner, "Enter the category number ([b] to go back): ", 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
             if (categoryChoice == -1) return;
 
             String selectedCategory = categories.get(categoryChoice - 1);
 
             // Step 2: Display Items in the Selected Category
-            System.out.println("\n--- Items in Category: " + selectedCategory + " ---");
+            System.out.println("\n\t--- Items in Category: " + selectedCategory + " ---");
             String sql = "SELECT * FROM menuitemsadmin WHERE category = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, selectedCategory);
@@ -59,14 +59,14 @@ public class MenuItemManager {
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }
                 if (count == 1) {
-                    System.out.println("❌ No items available in the selected category.");
+                    System.out.println("\t❌ No items available in the selected category.");
                     return;
                 }
                 System.out.println(table.render());
             }
 
             // Step 3: Enter Item ID to Delete
-            System.out.print("Enter the Item ID to delete: ");
+            System.out.print("\tEnter the Item ID to delete: ");
             int itemId = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
@@ -77,9 +77,9 @@ public class MenuItemManager {
                 int rowsDeleted = deleteStmt.executeUpdate();
 
                 if (rowsDeleted > 0) {
-                    System.out.println("✅ Menu item deleted successfully!");
+                    System.out.println("\t✅ Menu item deleted successfully!");
                 } else {
-                    System.out.println("❌ Item ID not found.");
+                    System.out.println("\t❌ Item ID not found.");
                 }
             }
         } catch (SQLException e) {
@@ -89,13 +89,13 @@ public class MenuItemManager {
     private static final List<String> VALID_CATEGORIES = Arrays.asList("Appetizers", "Main Course", "Beverages", "Desserts");
 
     public static String validateCategory(Scanner scanner) {
-        System.out.println("\n--- Select a Category ---");
+        System.out.println("\n\t--- Select a Category ---");
         for (int i = 0; i < VALID_CATEGORIES.size(); i++) {
             System.out.println((i + 1) + ". " + VALID_CATEGORIES.get(i));
         }
 
         while (true) {
-            System.out.print("Enter the category number: ");
+            System.out.print("\tEnter the category number: ");
             String input = scanner.nextLine().trim();
 
             try {
@@ -103,10 +103,10 @@ public class MenuItemManager {
                 if (choice >= 1 && choice <= VALID_CATEGORIES.size()) {
                     return VALID_CATEGORIES.get(choice - 1); // Return selected category
                 } else {
-                    System.out.println("❌ Invalid choice. Please select a number between 1 and " + VALID_CATEGORIES.size() + ".");
+                    System.out.println("\t❌ Invalid choice. Please select a number between 1 and " + VALID_CATEGORIES.size() + ".");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("❌ Invalid input. Please enter a numeric value.");
+                System.out.println("\t❌ Invalid input. Please enter a numeric value.");
             }
         }
     }
@@ -117,15 +117,15 @@ public class MenuItemManager {
             // Step 1: Fetch and Display Categories
             List<String> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("❌ No categories available. Please add a category first.");
+                System.out.println("\t❌ No categories available. Please add a category first.");
                 return;
             }
 
-            System.out.println("\n--- Select a Category ---");
+            System.out.println("\n\t--- Select a Category ---");
             CategoryManager.displayCategories();
 
             // Step 2: Validate Category Selection
-            int categoryChoice = Utils.validateIntegerInput(scanner, "Enter the category number ([b] to go back): ", 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, "\tEnter the category number ([b] to go back): ", 1, categories.size());
             if (categoryChoice == -1) return; // User chose to go back
 
             String category = categories.get(categoryChoice - 1);
@@ -133,31 +133,31 @@ public class MenuItemManager {
             // Step 3: Validate Item Name
             String name;
             while (true) {
-                System.out.print("Enter item name: ");
+                System.out.print("\tEnter item name: ");
                 name = scanner.nextLine().trim();
                 if (name.isEmpty()) {
-                    System.out.println("❌ Item name cannot be empty. Please try again.");
+                    System.out.println("\t❌ Item name cannot be empty. Please try again.");
                 } else if (!name.matches("[a-zA-Z0-9\\s]+")) {
-                    System.out.println("❌ Invalid item name. Only alphanumeric characters and spaces are allowed.");
+                    System.out.println("\t❌ Invalid item name. Only alphanumeric characters and spaces are allowed.");
                 } else {
                     break; // Valid name
                 }
             }
 
             // Step 4: Optional Description
-            System.out.print("Enter item description (optional): ");
+            System.out.print("\tEnter item description (optional): ");
             String description = scanner.nextLine().trim();
 
             // Step 5: Validate Size
             String size;
             while (true) {
-                System.out.print("Enter size [(S, M, L, XL, etc.) or press Enter to skip]: ");
+                System.out.print("\tEnter size [(S, M, L, XL, etc.) or press Enter to skip]: ");
                 size = scanner.nextLine().trim().toUpperCase();
                 if (size.isEmpty()) {
                     size = null; // Allow skipping size
                     break;
                 } else if (!size.matches("[A-Z]+")) {
-                    System.out.println("❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.");
+                    System.out.println("\t❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.");
                 } else {
                     break; // Valid size
                 }
@@ -166,41 +166,41 @@ public class MenuItemManager {
             // Step 6: Validate Base Price
             double basePrice;
             while (true) {
-                System.out.print("Enter base price: ");
+                System.out.print("\tEnter base price: ");
                 String basePriceInput = scanner.nextLine().trim();
                 try {
                     basePrice = Double.parseDouble(basePriceInput);
                     if (basePrice <= 0) {
-                        System.out.println("❌ Base price must be greater than zero.");
+                        System.out.println("\t❌ Base price must be greater than zero.");
                     } else {
                         break; // Valid base price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Invalid input. Please enter a valid numeric value for base price.");
+                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for base price.");
                 }
             }
 
             // Step 7: Validate Sell Price
             double sellPrice;
             while (true) {
-                System.out.print("Enter sell price: ");
+                System.out.print("\tEnter sell price: ");
                 String sellPriceInput = scanner.nextLine().trim();
                 try {
                     sellPrice = Double.parseDouble(sellPriceInput);
                     if (sellPrice < basePrice) {
-                        System.out.println("❌ Sell price must be greater than or equal to the base price.");
+                        System.out.println("\t❌ Sell price must be greater than or equal to the base price.");
                     } else {
                         break; // Valid sell price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Invalid input. Please enter a valid numeric value for sell price.");
+                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for sell price.");
                 }
             }
 
             // Step 8: Validate Discount
             double discount = 0.0;
             while (true) {
-                System.out.print("Enter discount (press Enter to skip): ");
+                System.out.print("\tEnter discount (press Enter to skip): ");
                 String discountInput = scanner.nextLine().trim();
                 if (discountInput.isEmpty()) {
                     break; // No discount
@@ -208,12 +208,12 @@ public class MenuItemManager {
                 try {
                     discount = Double.parseDouble(discountInput);
                     if (discount < 0 || discount > sellPrice) {
-                        System.out.println("❌ Discount must be between 0 and the sell price.");
+                        System.out.println("\t❌ Discount must be between 0 and the sell price.");
                     } else {
                         break; // Valid discount
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Invalid input. Please enter a valid numeric value for discount.");
+                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for discount.");
                 }
             }
 
@@ -228,7 +228,7 @@ public class MenuItemManager {
                 pstmt.setDouble(6, sellPrice);
                 pstmt.setDouble(7, discount);
                 pstmt.executeUpdate();
-                System.out.println("✅ Menu item added successfully!");
+                System.out.println("\t✅ Menu item added successfully!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -242,7 +242,7 @@ public class MenuItemManager {
 
             while (rs.next()) {
                 String category = rs.getString("category");
-                System.out.println("\n--- " + category + " ---");
+                System.out.println("\n\t--- " + category + " ---");
                 displayItemsByCategory1(category);
             }
         } catch (SQLException e) {
@@ -325,16 +325,16 @@ public class MenuItemManager {
 
         List<String> categories = orderService.getCategories();
         if (categories.isEmpty()) {
-            System.out.println("No categories available.");
+            System.out.println("\tNo categories available.");
             return;
         }
 
-        System.out.println("\n--- Select a Category ---");
+        System.out.println("\n\t--- Select a Category ---");
         for (int i = 0; i < categories.size(); i++) {
             System.out.println((i + 1) + ". " + categories.get(i));
         }
 
-        int categoryChoice = Utils.validateIntegerInput(scanner, "Enter the category number ([b] to go back): ", 1, categories.size());
+        int categoryChoice = Utils.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
         if (categoryChoice == -1) return;
 
         String selectedCategory = categories.get(categoryChoice - 1);

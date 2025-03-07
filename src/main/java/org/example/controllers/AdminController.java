@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 import org.example.services.*;
 import org.example.utils.Utils;
+import org.example.views.MenuViewer.AdminMenuViewer;
 import org.example.services.UpdateMenuItem;
 import org.example.views.DisplayUI;
-import org.example.views.menuViewer.AdminMenuViewer;
 
 public class AdminController {
     public void adminPanel() {
@@ -14,60 +14,77 @@ public class AdminController {
 
         while (true) {
 
-            System.out.println("\n============ Admin Panel ============");
-            System.out.println("1. Add Menu Items");
-            System.out.println("2. Update Menu Items");
-            System.out.println("3. Remove Menu Items");
-            System.out.println("4. View All Menu Items");
-            System.out.println("5. Display Items by Category");
-            System.out.println("6. Manage Categories");
-            System.out.println("7. Manage Staff");
-            System.out.println("8. Report Menu");
-            System.out.println("9. Exit");
-
-            // ------------ Validate menu choice ------------
-
-            int choice = Utils.validateIntegerInput(scanner, "Enter your choice ([b] to go back): ", 1, 9);
+            System.out.print("""
+                                \u001B[34m
+                                ╔═════════════════════════════════════════╗
+                                ║  \u001B[36m            Admin Dashboard         \u001B[34m   ║
+                                ╠═════════════════════════════════════════╣
+                                ║   \u001B[33m[1].  🧑‍💻 Manage Items\u001B[34m                 ║
+                                ║   \u001B[33m[2].  🏷️ Manage Categories\u001B[34m            ║
+                                ║   \u001B[33m[3].  👥 Manage Staff\u001B[34m                 ║
+                                ║   \u001B[33m[4].  📊 Manage Report\u001B[34m                ║
+                                ║   \u001B[31m[5].  ❌ Exit\u001B[34m                         ║
+                                ╚═════════════════════════════════════════╝ \u001B[0m
+                            """);
+            int choice = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice ([b] to go back): ", 1, 9);
             if (choice == -1) continue;
 
             switch (choice) {
                 case 1:
-                    MenuItemManager.addMenuItem(scanner);
+                    itemPanel(scanner);
                     break;
-
                 case 2:
-                    // Update menu item
-                    UpdateMenuItem.updateMenuItem(scanner);
-                    break;
-
-                case 3:
-                    MenuItemManager.deleteMenuItem(scanner);
-                    break;
-
-                case 4:
-                    AdminMenuViewer.viewMenuItemsAdmin();
-                    break;
-
-                case 5:
-                    MenuItemManager.viewMenuItemsByCategorySeparately();
-                    break;
-
-                case 6:
                     CategoryManager.manageCategories(scanner);
                     break;
 
-                case 7:
+                case 3:
                     StaffManager.manageStaff(scanner);
                     break;
-                case 8:
+                case 4:
                     ReportManager.manageReports();
                     break;
-                case 9:
+                case 5:
                     DisplayUI.displayUI();
                     break;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("\tInvalid choice. Please try again.");
             }
+        }
+    }
+    public void itemPanel(Scanner scanner){
+        System.out.print("""
+                            \u001B[34m
+                            ╔════════════════════════════════════════╗
+                            ║      🍽️ Item Management Panel          ║
+                            ╠════════════════════════════════════════╣
+                            ║   \u001B[33m[1]. ➕ Add Menu Items\u001B[34m               ║
+                            ║   \u001B[33m[2]. ✏️ Update Menu Items\u001B[34m            ║
+                            ║   \u001B[33m[3]. 🗑️ Remove Menu Items\u001B[34m            ║
+                            ║   \u001B[33m[4]. 👀 View All Menu Items\u001B[34m          ║
+                            ║   \u001B[33m[5]. 🥘 Display Items by Category\u001B[34m    ║
+                            ║   \u001B[31m[6]. ❌ Exit\u001B[34m                         ║
+                            ╚════════════════════════════════════════╝\u001B[0m
+                        """);
+        int option = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 6);
+        switch (option) {
+            case 1:
+                MenuItemManager.addMenuItem(scanner);
+                break;
+            case 2:
+                UpdateMenuItem.updateMenuItem(scanner);
+                break;
+            case 3:
+                MenuItemManager.deleteMenuItem(scanner);
+                break;
+            case 4:
+                AdminMenuViewer.viewMenuItemsAdmin();
+                break;
+            case 5:
+                MenuItemManager.viewMenuItemsByCategorySeparately();
+                break;
+            case 6:
+                adminPanel();
+                break;
         }
     }
 }

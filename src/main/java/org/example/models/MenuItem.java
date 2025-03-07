@@ -37,6 +37,7 @@ public class MenuItem {
         return description;
     }
 
+
     public Boolean getAvailable() {
         return isAvailable;
     }

@@ -20,20 +20,20 @@ public class UpdateMenuItem {
             // Step 1: Fetch and Display Categories
             List<String> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("❌ No categories available. Please add a category first.");
+                System.out.println("\t❌ No categories available. Please add a category first.");
                 return;
             }
 
-            System.out.println("\n--- Select a Category ---");
+            System.out.println("\n\t--- Select a Category ---");
             CategoryManager.displayCategories();
 
-            int categoryChoice = Utils.validateIntegerInput(scanner, "Enter the category number ([b] to go back): ", 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, "\tEnter the category number ([b] to go back): ", 1, categories.size());
             if (categoryChoice == -1) return;
 
             String selectedCategory = categories.get(categoryChoice - 1);
 
             // Step 2: Display Items in the Selected Category
-            System.out.println("\n--- Items in Category: " + selectedCategory + " ---");
+            System.out.println("\n\t--- Items in Category: " + selectedCategory + " ---");
             String sql = "SELECT * FROM menuitemsadmin WHERE category = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, selectedCategory);
@@ -61,14 +61,14 @@ public class UpdateMenuItem {
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }
                 if (count == 1) {
-                    System.out.println("❌ No items available in the selected category.");
+                    System.out.println("\t❌ No items available in the selected category.");
                     return;
                 }
                 System.out.println(table.render());
             }
 
             // Step 3: Enter Item ID to Update
-            System.out.print("Enter the Item ID to update: ");
+            System.out.print("\tEnter the Item ID to update: ");
             int itemId = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
@@ -79,7 +79,7 @@ public class UpdateMenuItem {
                 ResultSet rs = fetchStmt.executeQuery();
 
                 if (!rs.next()) {
-                    System.out.println("❌ Item ID not found.");
+                    System.out.println("\t❌ Item ID not found.");
                     return;
                 }
 
@@ -92,25 +92,25 @@ public class UpdateMenuItem {
                 String currentSize = rs.getString("size");
 
                 // Step 5: Update Item Details
-                System.out.println("\n--- Updating Menu Item ---");
+                System.out.println("\n\t--- Updating Menu Item ---");
 
                 // Validate Item Name
                 String name;
                 while (true) {
-                    System.out.print("Enter new name (press Enter to skip): ");
+                    System.out.print("\tEnter new name (press Enter to skip): ");
                     name = scanner.nextLine().trim();
                     if (name.isEmpty()) {
                         name = currentName; // Keep existing name if skipped
                         break;
                     } else if (!name.matches("[a-zA-Z0-9\\s]+")) {
-                        System.out.println("❌ Invalid item name. Only alphanumeric characters and spaces are allowed.");
+                        System.out.println("\t❌ Invalid item name. Only alphanumeric characters and spaces are allowed.");
                     } else {
                         break; // Valid name
                     }
                 }
 
                 // Optional Description
-                System.out.print("Enter new description (press Enter to skip): ");
+                System.out.print("\tEnter new description (press Enter to skip): ");
                 String description = scanner.nextLine().trim();
                 if (description.isEmpty()) {
                     description = currentDescription; // Keep existing description if skipped
@@ -119,13 +119,13 @@ public class UpdateMenuItem {
                 // Validate Size
                 String size;
                 while (true) {
-                    System.out.print("Enter new size [(S, M, L, XL, etc.) or press Enter to skip]: ");
+                    System.out.print("\tEnter new size [(S, M, L, XL, etc.) or press Enter to skip]: ");
                     size = scanner.nextLine().trim().toUpperCase();
                     if (size.isEmpty()) {
                         size = currentSize; // Keep existing size if skipped
                         break;
                     } else if (!size.matches("[A-Z]+")) {
-                        System.out.println("❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.");
+                        System.out.println("\t❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.");
                     } else {
                         break; // Valid size
                     }
@@ -134,7 +134,7 @@ public class UpdateMenuItem {
                 // Validate Base Price
                 double basePrice = currentBasePrice;
                 while (true) {
-                    System.out.print("Enter new base price (press Enter to skip): ");
+                    System.out.print("\tEnter new base price (press Enter to skip): ");
                     String basePriceInput = scanner.nextLine().trim();
                     if (basePriceInput.isEmpty()) {
                         break; // Keep existing base price if skipped
@@ -142,19 +142,19 @@ public class UpdateMenuItem {
                     try {
                         basePrice = Double.parseDouble(basePriceInput);
                         if (basePrice <= 0) {
-                            System.out.println("❌ Base price must be greater than zero.");
+                            System.out.println("\t❌ Base price must be greater than zero.");
                         } else {
                             break; // Valid base price
                         }
                     } catch (NumberFormatException e) {
-                        System.out.println("❌ Invalid input. Please enter a valid numeric value for base price.");
+                        System.out.println("\t❌ Invalid input. Please enter a valid numeric value for base price.");
                     }
                 }
 
                 // Validate Sell Price
                 double sellPrice = currentSellPrice;
                 while (true) {
-                    System.out.print("Enter new sell price (press Enter to skip): ");
+                    System.out.print("\tEnter new sell price (press Enter to skip): ");
                     String sellPriceInput = scanner.nextLine().trim();
                     if (sellPriceInput.isEmpty()) {
                         break; // Keep existing sell price if skipped
@@ -162,12 +162,12 @@ public class UpdateMenuItem {
                     try {
                         sellPrice = Double.parseDouble(sellPriceInput);
                         if (sellPrice < basePrice) {
-                            System.out.println("❌ Sell price must be greater than or equal to the base price.");
+                            System.out.println("\t❌ Sell price must be greater than or equal to the base price.");
                         } else {
                             break; // Valid sell price
                         }
                     } catch (NumberFormatException e) {
-                        System.out.println("❌ Invalid input. Please enter a valid numeric value for sell price.");
+                        System.out.println("\t❌ Invalid input. Please enter a valid numeric value for sell price.");
                     }
                 }
 
@@ -182,12 +182,12 @@ public class UpdateMenuItem {
                     try {
                         discount = Double.parseDouble(discountInput);
                         if (discount < 0 || discount > sellPrice) {
-                            System.out.println("❌ Discount must be between 0 and the sell price.");
+                            System.out.println("\t❌ Discount must be between 0 and the sell price.");
                         } else {
                             break; // Valid discount
                         }
                     } catch (NumberFormatException e) {
-                        System.out.println("❌ Invalid input. Please enter a valid numeric value for discount.");
+                        System.out.println("\t❌ Invalid input. Please enter a valid numeric value for discount.");
                     }
                 }
 
@@ -209,7 +209,7 @@ public class UpdateMenuItem {
                     updateStmt.setDouble(6, discount);
                     updateStmt.setInt(7, itemId);
                     updateStmt.executeUpdate();
-                    System.out.println("✅ Menu item updated successfully!");
+                    System.out.println("\t✅ Menu item updated successfully!");
                 }
             }
         } catch (SQLException e) {

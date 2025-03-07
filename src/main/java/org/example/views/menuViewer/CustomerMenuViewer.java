@@ -23,9 +23,9 @@ public class CustomerMenuViewer {
                 displayMenuItems(conn, currentPage);
 
                 // Pagination controls
-                System.out.println("\nPage " + currentPage + " of " + totalPages);
-                System.out.println("[N] Next  |  [P] Previous  |  [E] Exit");
-                System.out.print("Choose an option: ");
+                System.out.println("\n\t📄 Page " + currentPage + " of " + totalPages);
+                System.out.println("\t[➡️] Next  |  [⬅️] Previous  |  [❌] Exit");
+                System.out.print("\t👉 Choose an option: ");
                 String choice = scanner.next().toLowerCase();
 
                 if (choice.equals("n") && currentPage < totalPages) {
@@ -33,10 +33,10 @@ public class CustomerMenuViewer {
                 } else if (choice.equals("p") && currentPage > 1) {
                     currentPage--;
                 } else if (choice.equals("e")) {
-                    System.out.println("Exiting menu view.");
+                    System.out.println("\tExiting menu view.");
                     break;
                 } else {
-                    System.out.println("Invalid input! Try again.");
+                    System.out.println("\tInvalid input! Try again.");
                 }
             }
         } catch (SQLException e) {
@@ -54,7 +54,7 @@ public class CustomerMenuViewer {
             stmt.setInt(2, offset);
             ResultSet rs = stmt.executeQuery();
 
-            System.out.println("\n--------- MENU ITEMS ---------");
+            System.out.println("\n\t--------- MENU ITEMS ---------");
             String currentCategory = "";
             Table table = null;
             int count = 1;
@@ -66,7 +66,7 @@ public class CustomerMenuViewer {
                         System.out.println(table.render());
                     }
                     currentCategory = category;
-                    System.out.println("\n--- " + currentCategory + " ---");
+                    System.out.println("\n\t--- " + currentCategory + " ---");
                     table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
                     table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));

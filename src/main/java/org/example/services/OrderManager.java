@@ -16,9 +16,9 @@ public class OrderManager {
 
         while (true) {
             displayOrders(currentPage);
-            System.out.println("\nPage " + currentPage + " of " + totalPages);
-            System.out.println("Options: [N] Next | [P] Previous | [Q] Quit");
-            System.out.print("Enter choice: ");
+            System.out.println("\t📄 Page " + currentPage + " of " + totalPages);
+            System.out.println("\t🚪 Options: [➡️ N] Next | [⬅️ P] Previous | [❌ Q] Quit");
+            System.out.print("\t👉 Enter choice: ");
             String choice = scanner.nextLine().trim().toLowerCase();
 
             if (choice.equals("n") && currentPage < totalPages) {
@@ -26,10 +26,10 @@ public class OrderManager {
             } else if (choice.equals("p") && currentPage > 1) {
                 currentPage--;
             } else if (choice.equals("q")) {
-                System.out.println("Exiting pagination view.");
+                System.out.println("\t❌Exiting pagination view. ");
                 break;
             } else {
-                System.out.println("Invalid input. Please enter [N], [P], or [Q].");
+                System.out.println("\t❌Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].");
             }
         }
     }
@@ -37,6 +37,10 @@ public class OrderManager {
     private static void displayOrders(int page) {
         int offset = (page - 1) * PAGE_SIZE;
         String query = "SELECT order_id,name , size, quantity, description, order_date FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?";
+        int consoleWidth = 100;
+        int tableWidth = 90;
+        int leftPadding = (consoleWidth - tableWidth) / 2;
+        String padding = " ".repeat(leftPadding);
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -65,12 +69,15 @@ public class OrderManager {
                 table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             }
-
-            System.out.println("\n--------- CUSTOMER ORDERS ---------");
-            System.out.println(table.render());
+            String[] tableLines = table.render().split("\n");
+            for (String line : tableLines) {
+                System.out.println(padding + line);
+            }
+//            System.out.println("\n\t--------- CUSTOMER ORDERS ---------");
+//            System.out.println(table.render());
 
         } catch (SQLException e) {
-            System.err.println("❌ Error retrieving customer orders: " + e.getMessage());
+            System.err.println("\t❌ Error retrieving customer orders: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -88,6 +95,6 @@ public class OrderManager {
         } catch (SQLException e) {
             System.err.println("❌ Error fetching order count: " + e.getMessage());
         }
-        return 1; // Default to 1 page if error occurs
+        return 1;
     }
 }
