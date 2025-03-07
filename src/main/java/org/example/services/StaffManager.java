@@ -3,6 +3,10 @@ package org.example.services;
 import org.example.utils.DatabaseConnection;
 import org.example.utils.Utils;
 import org.mindrot.jbcrypt.BCrypt;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.CellStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -172,7 +176,7 @@ public class StaffManager {
                     addStaff(scanner);
                     break;
                 case 2:
-//                    viewAllStaff();
+                    viewAllStaff();
                     break;
                 case 3:
                     updateStaff(scanner);
@@ -185,6 +189,41 @@ public class StaffManager {
                 case 5:
                     return;
             }
+        }
+    }
+
+    public static void viewAllStaff() {
+        String sql = "SELECT * FROM users";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            Table table = new Table(9, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+            table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("UUID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Full Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Username", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Password", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Email", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Phone Number", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Role", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Date Added", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            int count = 1;
+            while (rs.next()) {
+                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getObject("uuid").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("full_name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("userName"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("password"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("email"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("phone_number"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("role"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getTimestamp("date_time_added").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            }
+            System.out.println(table.render());
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

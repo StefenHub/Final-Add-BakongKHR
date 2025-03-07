@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 import org.example.services.*;
 import org.example.utils.Utils;
-import org.example.views.MenuViewer.AdminMenuViewer;
 import org.example.services.UpdateMenuItem;
 import org.example.views.DisplayUI;
+import org.example.views.menuViewer.AdminMenuViewer;
 
 public class AdminController {
     public void adminPanel() {

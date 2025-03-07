@@ -1,5 +1,5 @@
 package org.example.controllers;
-import org.example.views.MenuViewer.CustomerMenuViewer;
+import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
 import org.example.services.PaymentService;
 
