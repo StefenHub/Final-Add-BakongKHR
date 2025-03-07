@@ -33,7 +33,6 @@ public class DisplayUI {
             System.out.print("\t\u001B[34m👉 Enter your choice ([b] to go back):");
             int choice = Utils.validateIntegerInput(scanner, "", 1, 5);
             if (choice == -1) return;
-
             switch (choice) {
                 case 1:
                     if (authenticateUser(scanner, STAFF_PASSWORD, "Staff")) {
