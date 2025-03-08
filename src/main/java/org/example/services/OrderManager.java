@@ -1,6 +1,7 @@
 package org.example.services;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 import org.example.utils.DatabaseConnection;
@@ -18,25 +19,38 @@ public class OrderManager {
             displayOrders(currentPage);
             System.out.println("\t📄 Page " + currentPage + " of " + totalPages);
             System.out.println("\t🚪 Options: [➡️ N] Next | [⬅️ P] Previous | [❌ Q] Quit");
-            System.out.print("\t👉 Enter choice: ");
-            String choice = scanner.nextLine().trim().toLowerCase();
 
-            if (choice.equals("n") && currentPage < totalPages) {
-                currentPage++;
-            } else if (choice.equals("p") && currentPage > 1) {
-                currentPage--;
-            } else if (choice.equals("q")) {
-                System.out.println("\t❌Exiting pagination view. ");
-                break;
-            } else {
-                System.out.println("\t❌Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].");
+            while (true) {
+                System.out.print("\t👉 Enter choice: ");
+                String choice = scanner.nextLine().trim().toLowerCase();
+
+                if (choice.equals("n")) {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        break;
+                    } else {
+                        System.out.println("\t❌ You are already on the last page.");
+                    }
+                } else if (choice.equals("p")) {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        break;
+                    } else {
+                        System.out.println("\t❌ You are already on the first page.");
+                    }
+                } else if (choice.equals("q")) {
+                    System.out.println("\t❌ Exiting pagination view.");
+                    return;
+                } else {
+                    System.out.println("\t❌ Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].");
+                }
             }
         }
     }
 
     private static void displayOrders(int page) {
         int offset = (page - 1) * PAGE_SIZE;
-        String query = "SELECT order_id,name , size, quantity, description, order_date FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?";
+        String query = "SELECT order_id, name, size, quantity, description, order_date FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?";
         int consoleWidth = 100;
         int tableWidth = 90;
         int leftPadding = (consoleWidth - tableWidth) / 2;
@@ -66,15 +80,12 @@ public class OrderManager {
                 table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("quantity"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("order_date"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
+                table.addCell(formatDate(rs.getTimestamp("order_date")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
                 System.out.println(padding + line);
             }
-//            System.out.println("\n\t--------- CUSTOMER ORDERS ---------");
-//            System.out.println(table.render());
 
         } catch (SQLException e) {
             System.err.println("\t❌ Error retrieving customer orders: " + e.getMessage());
@@ -83,7 +94,7 @@ public class OrderManager {
     }
 
     private static int getTotalPages() {
-        String query = "SELECT COUNT(*) AS total FROM orders";
+        String query = "SELECT COUNT(*) AS total FROM order_items";
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -96,5 +107,11 @@ public class OrderManager {
             System.err.println("❌ Error fetching order count: " + e.getMessage());
         }
         return 1;
+    }
+
+    private static String formatDate(Timestamp timestamp) {
+        if (timestamp == null) return "N/A";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return sdf.format(timestamp);
     }
 }

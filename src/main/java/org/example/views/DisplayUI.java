@@ -1,8 +1,8 @@
 package org.example.views;
 import org.example.controllers.AdminController;
+import org.example.controllers.ChefController;
 import org.example.controllers.CustomerController;
-import org.example.controllers.Kitchen;
-import org.example.controllers.Staff;
+import org.example.controllers.StaffController;
 import org.example.services.OrderService;
 import org.example.utils.Utils;
 
@@ -21,14 +21,14 @@ public class DisplayUI {
             System.out.print("""
                                   \u001B[34m
                                   ╔════════════════════════════════════════════╗
-                                  ║       🍽️ Restaurant Management System      ║ 
+                                  ║       🍽️ Restaurant Management System      ║
                                   ╠════════════════════════════════════════════╣
-                                  ║   \u001B[33m[1]. 👨‍🍳 Staff\u001B[34m                            ║
-                                  ║   \u001B[33m[2]. 🔥 Kitchen\u001B[34m                          ║
-                                  ║   \u001B[33m[3]. 🍽️ Customer\u001B[34m                         ║
-                                  ║   \u001B[33m[4]. 🛠️ Admin\u001B[34m                            ║
-                                  ║   \u001B[31m[5]. ❌ Exit\u001B[34m                             ║
-                                  ╚════════════════════════════════════════════╝\u001B[0m 
+                                  ║   \u001B[33m[1]. 👥 Staff\u001B[34m                            ║
+                                  ║   \u001B[33m[2]. 👨‍🍳 Chef\u001B[34m                             ║
+                                  ║   \u001B[33m[3]. 🏷️ Customer\u001B[34m                         ║
+                                  ║   \u001B[33m[4]. ⚙️️ Admin\u001B[34m                            ║
+                                  ║   \u001B[31m[0]. 🚪 Exit\u001B[34m                             ║
+                                  ╚════════════════════════════════════════════╝\u001B[0m
                               """);
             System.out.print("\t\u001B[34m👉 Enter your choice ([b] to go back):");
             int choice = Utils.validateIntegerInput(scanner, "", 1, 5);
@@ -36,14 +36,14 @@ public class DisplayUI {
             switch (choice) {
                 case 1:
                     if (authenticateUser(scanner, STAFF_PASSWORD, "Staff")) {
-                        Staff staff = new Staff(scanner, orderService);
-                        staff.start();
+                        StaffController staffController = new StaffController(scanner, orderService);
+                        staffController.start();
                     }
                     break;
                 case 2:
                     if (authenticateUser(scanner, KITCHEN_PASSWORD, "Kitchen")) {
-                        Kitchen kitchen = new Kitchen(scanner);
-                        kitchen.start();
+                        ChefController chefController = new ChefController(scanner);
+                        chefController.start();
                     }
                     break;
                 case 3:

@@ -1,6 +1,7 @@
 package org.example.services;
 
 import org.example.utils.DatabaseConnection;
+import org.example.utils.InputValidator;
 import org.example.utils.Utils;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -304,21 +305,6 @@ public class MenuItemManager {
         return menuItems;
     }
 
-    private static String getCategoryFromNumber(int categoryNumber) {
-        switch (categoryNumber) {
-            case 1:
-                return "Appetizers";
-            case 2:
-                return "Main Course";
-            case 3:
-                return "Beverages";
-            case 4:
-                return "Desserts";
-            default:
-                return "Unknown";
-        }
-    }
-
     public static void displayItemsByCategory1(String category) {
         Scanner scanner = new Scanner(System.in);
         OrderService orderService = new OrderService();
@@ -334,11 +320,11 @@ public class MenuItemManager {
             System.out.println((i + 1) + ". " + categories.get(i));
         }
 
-        int categoryChoice = Utils.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
+        int categoryChoice = InputValidator.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
         if (categoryChoice == -1) return;
 
         String selectedCategory = categories.get(categoryChoice - 1);
-        orderService.displayItemsByCategory(selectedCategory);
+        orderService.displayItemsByCategory(selectedCategory, scanner);
     }
 
 }

@@ -66,7 +66,7 @@ public class StaffManager {
             System.out.print("\tEnter role: ");
             role = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(role.toLowerCase())) {
-                System.out.println("\t❌ Invalid role! Must be one of: staff, admin, kitchen.");
+                System.out.println("\t❌ Invalid role! Must be one of: staffController, admin, kitchen.");
             }
         } while (!VALID_ROLES.contains(role.toLowerCase()));
 
@@ -93,7 +93,7 @@ public class StaffManager {
     }
 
     public static void updateStaff(Scanner scanner) {
-        System.out.print("\tEnter staff UUID: ");
+        System.out.print("\tEnter staffController UUID: ");
         UUID uuid = UUID.fromString(scanner.nextLine().trim());
 
         String newName;
@@ -119,7 +119,7 @@ public class StaffManager {
             System.out.print("\tEnter new role: ");
             newRole = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(newRole.toLowerCase())) {
-                System.out.println("\t❌ Invalid role! Must be one of: staff, admin, kitchen.");
+                System.out.println("\t❌ Invalid role! Must be one of: staffController, admin, kitchen.");
             }
         } while (!VALID_ROLES.contains(newRole.toLowerCase()));
 
@@ -188,7 +188,7 @@ public class StaffManager {
                     updateStaff(scanner);
                     break;
                 case 4:
-                    System.out.print("\tEnter staff UUID: ");
+                    System.out.print("\tEnter staffController UUID: ");
                     UUID uuidToRemove = UUID.fromString(scanner.nextLine().trim());
                     removeStaff(uuidToRemove);
                     break;
@@ -238,7 +238,7 @@ public class StaffManager {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_.-]*@gmail\\.com$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^0\\d{8,10}$");
-    private static final Set<String> VALID_ROLES = new HashSet<>(Arrays.asList("staff", "admin", "kitchen"));
+    private static final Set<String> VALID_ROLES = new HashSet<>(Arrays.asList("staffController", "admin", "kitchen"));
 
     // test StaffManager
     public static void main(String[] args) {

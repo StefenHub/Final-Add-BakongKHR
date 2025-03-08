@@ -47,11 +47,37 @@ public class OrderService {
     }
 
     // Display all menu items in a table format
-    public void displayMenuItems(List<Map<String, Object>> items) {
+    public void displayMenuItems(List<Map<String, Object>> items, Scanner scanner) {
         if (items.isEmpty()) {
             System.out.println("\tNo items available.");
             return;
         }
+
+        int itemsPerPage = 5;
+        int totalPages = (int) Math.ceil((double) items.size() / itemsPerPage);
+        int currentPage = 1;
+
+        while (true) {
+            displayPage(items, currentPage, itemsPerPage, totalPages);
+
+            System.out.print("\tEnter 'n' for next page, 'p' for previous page, or 'q' to quit: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            if (input.equals("n") && currentPage < totalPages) {
+                currentPage++;
+            } else if (input.equals("p") && currentPage > 1) {
+                currentPage--;
+            } else if (input.equals("q")) {
+                break;
+            } else {
+                System.out.println("\tInvalid input. Please try again.");
+            }
+        }
+    }
+
+    private void displayPage(List<Map<String, Object>> items, int currentPage, int itemsPerPage, int totalPages) {
+        int start = (currentPage - 1) * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, items.size());
 
         Table table = new Table(7, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
         table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -62,7 +88,8 @@ public class OrderService {
         table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
         table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
-        for (Map<String, Object> item : items) {
+        for (int i = start; i < end; i++) {
+            Map<String, Object> item = items.get(i);
             table.addCell(String.valueOf(item.get("item_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell((String) item.get("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell((String) item.get("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -73,6 +100,7 @@ public class OrderService {
         }
 
         System.out.println(table.render());
+        System.out.printf("\tPage %d of %d%n", currentPage, totalPages);
     }
 
     // Add an item to the cart
@@ -95,22 +123,23 @@ public class OrderService {
 
 
     // View the contents of the cart
+
     public void viewCart() {
         if (cart.isEmpty()) {
             System.out.println("\t❌ Your cart is empty.");
             return;
         }
 
-        System.out.println("\t\n--- Your Cart ---");
         double grandTotal = 0;
 
-        Table table = new Table(6, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
-        table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-        table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-        table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-        table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-        table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-        table.addCell("Total Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        // Print Receipt Header
+        System.out.println("\t                          RECEIPT                         ");
+        System.out.println("\t----------------------------------------------------------");
+
+        // Table Header
+        System.out.printf("\t%-5s %-20s %6s %10s %10s%n",
+                "ID", "Description", "Qty", "Disc ($)", "Price ($)");
+        System.out.println("\t----------------------------------------------------------");
 
         for (Map<String, Object> cartItem : cart) {
             int itemId = (int) cartItem.get("item_id");
@@ -122,17 +151,25 @@ public class OrderService {
             double totalPrice = unitPrice * quantity;
             grandTotal += totalPrice;
 
-            table.addCell(String.valueOf(itemId), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(name, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.valueOf(quantity), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.format("$%.2f", sellPrice), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.format("$%.2f", discount), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.format("$%.2f", totalPrice), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            // Truncate long names to fit within 20 characters
+            int nameMaxLength = 20;
+            String formattedName = name.length() > nameMaxLength
+                    ? name.substring(0, nameMaxLength - 3) + "..."
+                    : name;
+
+            // Print the item row
+            System.out.printf("\t%-5d %-20s %6d %10.2f %10.2f%n",
+                    itemId, formattedName, quantity, discount, totalPrice);
         }
 
-        System.out.println(table.render());
-        System.out.printf("\tGrand Total: $%.2f%n", grandTotal);
+        // Print Footer
+        System.out.println("\t----------------------------------------------------------");;
+        System.out.printf("\t%-5s %-20s %6s %10s %10s%n", "Grand Price", grandTotal);
+        System.out.println("\t----------------------------------------------------------");
+        System.out.println("               Thank you for shopping with us!              ");
     }
+
+
 
     // Update the quantity of an item in the cart
     public boolean updateCartItemQuantity(int itemId, int newQuantity) {
@@ -331,7 +368,7 @@ public class OrderService {
     }
 
 
-    public void displayItemsByCategory(String selectedCategory) {
+    public void displayItemsByCategory(String selectedCategory, Scanner scanner) {
         List<Map<String, Object>> items = getMenuItems();
         List<Map<String, Object>> itemsByCategory = new ArrayList<>();
 
@@ -340,7 +377,7 @@ public class OrderService {
                 itemsByCategory.add(item);
             }
         }
-        displayMenuItems(itemsByCategory);
+        displayMenuItems(itemsByCategory, scanner);
     }
 
     public Map<String, Object> getItemById(int itemId) {

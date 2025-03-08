@@ -20,6 +20,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class QRCode {
     private static final String API_URL = "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5";
@@ -37,13 +38,13 @@ public class QRCode {
 
     public void generateAndDisplayQRCode() throws WriterException {
         IndividualInfo individualInfo = new IndividualInfo();
-        individualInfo.setAccountInformation("\t010513288");
-        individualInfo.setBakongAccountId("\tdina_pisethi31@aclb");
-        individualInfo.setAcquiringBank("\tABA");
+        individualInfo.setAccountInformation("010513288");
+        individualInfo.setBakongAccountId("dina_pisethi31@aclb");
+        individualInfo.setAcquiringBank("ABA");
         individualInfo.setCurrency(KHQRCurrency.USD);
-        individualInfo.setAmount(0.01);
-        individualInfo.setMerchantName("\tROS Cambodia");
-        individualInfo.setMerchantCity("\tPhnom Penh");
+        individualInfo.setAmount(1.0);
+        individualInfo.setMerchantName("ROS Cambodia");
+        individualInfo.setMerchantCity("Phnom Penh");
 
         KHQRResponse<KHQRData> response = BakongKHQR.generateIndividual(individualInfo);
 
@@ -70,27 +71,57 @@ public class QRCode {
     }
 
     private void displayQRPopup(BufferedImage image, String md5) {
-        frame = new JFrame("\tScan QR Code");
+        frame = new JFrame("Scan QR Code");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        JLabel qrLabel = new JLabel(new ImageIcon(image));
-        statusLabel = new JLabel("\tWaiting for Payment...", SwingConstants.CENTER);
-        statusLabel.setFont(new Font("\tArial", Font.BOLD, 14));
+        // "Scan Now!!" Label (Above QR Code)
+        JLabel scanNowLabel = new JLabel("Scan Now!!", SwingConstants.CENTER);
+        scanNowLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        scanNowLabel.setForeground(Color.BLUE);
 
+        // QR Code Image
+        JLabel qrLabel = new JLabel(new ImageIcon(image));
+
+        // Countdown Timer Status Label (Below QR Code)
+        statusLabel = new JLabel("Waiting for Payment... (60s)", SwingConstants.CENTER);
+        statusLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        // Add components to frame
+        frame.add(scanNowLabel, BorderLayout.NORTH);
         frame.add(qrLabel, BorderLayout.CENTER);
         frame.add(statusLabel, BorderLayout.SOUTH);
+
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        // Start payment check in a separate thread
         new Thread(() -> waitForPayment(md5)).start();
+
+        // Start Countdown Timer
+        new Thread(() -> startCountdown(60)).start();
     }
+
+    private void startCountdown(int initialTime) {
+        AtomicInteger i = new AtomicInteger(initialTime);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(() -> {
+            SwingUtilities.invokeLater(() -> {
+                statusLabel.setText("Waiting for Payment... (" + i.get() + "s)");
+            });
+            i.getAndDecrement();
+            if (i.get() < 0) {
+                scheduler.shutdownNow();
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
 
     private void waitForPayment(String md5) {
         int attempts = 0;
         int waitTime = 5000; // Start with 500ms
-        int maxAttempts = 90 * 1000 / waitTime; // 90 seconds timeout
+        int maxAttempts = 35 * 1000 / waitTime; //
 
         while (attempts < maxAttempts) {
             try {
@@ -105,7 +136,7 @@ public class QRCode {
                     return;
                 }
 
-                waitTime = Math.min(waitTime * 2, 5000); // Max wait time = 5s
+                waitTime = Math.min(waitTime * 1, 5000); // Max wait time = 5s
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -126,15 +157,15 @@ public class QRCode {
             ObjectMapper objectMapper = new ObjectMapper();
             String requestBody = objectMapper.writeValueAsString(new Md5Request(md5));
 
-            int maxAttempts = 5;
+            int maxAttempts = 1;
             int attempt = 0;
             int interval = 3; // seconds
 
             while (attempt < maxAttempts) {
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                         .uri(URI.create(API_URL))
-                        .header("\tAuthorization", AUTH_TOKEN)
-                        .header("\tContent-Type", "application/json")
+                        .header("Authorization", AUTH_TOKEN)
+                        .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                         .build();
 
@@ -147,10 +178,10 @@ public class QRCode {
 
                     if (responseCode == 0) {
                         System.out.println("\t✅ Success: " + responseMessage);
-                        System.out.println("\t🔹 Data: " + jsonResponse.path("data").toPrettyString());
+//                        System.out.println("\t🔹 Data: " + jsonResponse.path("data").toPrettyString());
                         return true;
                     } else {
-                        System.out.println("\t⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
+//                        System.out.println("\t⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
                     }
                 } else {
                     System.out.println("\t❌ API Error: " + response.statusCode() + " - " + response.body());
@@ -160,7 +191,7 @@ public class QRCode {
                 TimeUnit.SECONDS.sleep(interval);
             }
 
-            System.out.println("\t⏳ Transaction validation failed after multiple attempts.");
+//            System.out.println("\t⏳ Transaction validation failed after multiple attempts.");
         } catch (Exception e) {
             System.err.println("\tException: " + e.getMessage());
         }
@@ -180,8 +211,14 @@ public class QRCode {
         }
 
         public void setMd5(String md5) {
+
             this.md5 = md5;
         }
+    }
+
+    // test QR
+    public static void main(String[] args) {
+        QRCodePayment();
     }
 
 }
