@@ -1,47 +1,46 @@
 package org.example.views;
+
 import org.example.controllers.AdminController;
 import org.example.controllers.ChefController;
 import org.example.controllers.CustomerController;
 import org.example.controllers.StaffController;
 import org.example.services.OrderService;
-import org.example.utils.Utils;
+import org.example.utils.*;
 
 import java.util.Scanner;
-
 
 public class DisplayUI {
     public static void displayUI() {
         Scanner scanner = new Scanner(System.in);
-        OrderService orderService = new OrderService(); // Ensure menuItems is passed
+        OrderService orderService = new OrderService();
+
         final String ADMIN_PASSWORD = "admin123";
         final String STAFF_PASSWORD = "staff123";
-        final String KITCHEN_PASSWORD = "kitchen123";
+        final String CHEF_PASSWORD = "chef123";
+
+        boolean firstTime = true;
 
         while (true) {
-            System.out.print("""
-                                  \u001B[34m
-                                  ╔════════════════════════════════════════════╗
-                                  ║       🍽️ Restaurant Management System      ║
-                                  ╠════════════════════════════════════════════╣
-                                  ║   \u001B[33m[1]. 👥 Staff\u001B[34m                            ║
-                                  ║   \u001B[33m[2]. 👨‍🍳 Chef\u001B[34m                             ║
-                                  ║   \u001B[33m[3]. 🏷️ Customer\u001B[34m                         ║
-                                  ║   \u001B[33m[4]. ⚙️️ Admin\u001B[34m                            ║
-                                  ║   \u001B[31m[0]. 🚪 Exit\u001B[34m                             ║
-                                  ╚════════════════════════════════════════════╝\u001B[0m
-                              """);
-            System.out.print("\t\u001B[34m👉 Enter your choice ([b] to go back):");
-            int choice = Utils.validateIntegerInput(scanner, "", 1, 5);
-            if (choice == -1) return;
+            if (firstTime) {
+                mainUI.asciiUI();
+                firstTime = false;
+            }
+
+            // Improve input prompt spacing
+            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+
+            int choice = Utils.validateIntegerInput(scanner, "", 0, 4);
+            if (choice == -1) return; // Exit condition
+
             switch (choice) {
                 case 1:
-                    if (authenticateUser(scanner, STAFF_PASSWORD, "Staff")) {
+                    if (AuthUtils.authenticateUser(scanner, STAFF_PASSWORD, "Staff")) {
                         StaffController staffController = new StaffController(scanner, orderService);
                         staffController.start();
                     }
                     break;
                 case 2:
-                    if (authenticateUser(scanner, KITCHEN_PASSWORD, "Kitchen")) {
+                    if (AuthUtils.authenticateUser(scanner, CHEF_PASSWORD, "Kitchen")) {
                         ChefController chefController = new ChefController(scanner);
                         chefController.start();
                     }
@@ -51,31 +50,22 @@ public class DisplayUI {
                     customerController.start();
                     break;
                 case 4:
-                    if (authenticateUser(scanner, ADMIN_PASSWORD, "Admin")) {
+                    if (AuthUtils.authenticateUser(scanner, ADMIN_PASSWORD, "Admin")) {
                         new AdminController().adminPanel();
                     }
                     break;
-                case 5:
-                    System.out.println("\tExiting... Thank you for using our system!");
+                case 0:
+                    ConsoleFormatter.printSuccessMessage("✅ Exiting... Thank you for using our system!");
                     scanner.close();
                     return;
                 default:
-                    System.out.println("\tInvalid choice! Please try again.");
+                    ConsoleFormatter.printErrorMessage((ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
 
-    // Authentication method for Admin, Staff, and Kitchen
-    private static boolean authenticateUser(Scanner scanner, String correctPassword, String role) {
-        System.out.print("\tEnter " + role + " Password: ");
-        String inputPassword = scanner.nextLine().trim();
-
-        if (inputPassword.equals(correctPassword)) {
-            System.out.println("\t✅ " + role + " Login Successful!");
-            return true;
-        } else {
-            System.out.println("\t❌ Incorrect Password! Access Denied.");
-            return false;
-        }
+    // test the displayUI method
+    public static void main(String[] args) {
+        displayUI();
     }
 }

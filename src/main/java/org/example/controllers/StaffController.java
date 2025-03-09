@@ -2,15 +2,28 @@ package org.example.controllers;
 
 import org.example.services.OrderManager;
 import org.example.services.OrderService;
+import org.example.utils.ColorFormatter;
+import org.example.utils.ConsoleFormatter;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.CellStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.sql.*;
-
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class StaffController {
     private final Scanner scanner;
     private final OrderService orderService;
+    final String RESET = "\u001B[0m";
+    final String BOLD_BLUE = "\033[1;34m"; // Blue title
+    final String WHITE_BORDER = "\033[97m"; // White border
+
+    int consoleWidth = 180; // Console width
+    int tableWidth = 100; // Wider table width
+    int leftPadding = (consoleWidth - tableWidth) / 2;
+    String padding = " ".repeat(leftPadding);
 
     public StaffController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
@@ -20,17 +33,35 @@ public class StaffController {
     //------------------- Start the staffController interaction menu -------------------
     public void start() {
         while (true) {
-            System.out.print("""
-                        \u001B[34m╔═════════════════════════════════════════╗
-                        ║  \u001B[36m          🏢 Staff Dashboard      \u001B[34m     ║
-                        ╠═════════════════════════════════════════╣
-                        ║   \u001B[33m[1]. 📋 View All Customer Orders\u001B[34m      ║ 
-                        ║   \u001B[33m[2]. 🛒 Place an Order for a Customer\u001B[34m ║ 
-                        ║   \u001B[31m[0]. ❌ Exit\u001B[34m                          ║ 
-                        ╚═════════════════════════════════════════╝\u001B[0m
-                    """);
 
-            int choice = validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 3);
+            // Create a table with a SINGLE wide column
+            Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
+            table.setColumnWidth(0, 80, 90); // Explicitly setting column width wider
+
+            CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
+            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT); // Left alignment for numbers
+
+            // Title Row (Centered)
+            table.addCell(BOLD_BLUE + "Welcome to Staff Panel" + RESET, centerStyle);
+
+            // Menu Options (Numbers Left-Aligned)
+            String[] options = {
+                    "1.  View All Orders",
+                    "2.  Place Order",
+                    "0.  Exit"
+            };
+
+            for (String option : options) {
+                table.addCell(BOLD_BLUE + option.trim() + RESET, leftStyle); // Left-align & reset colors properly
+            }
+
+            // Print the Table with WHITE Borders
+            String[] tableLines = table.render().split("\n");
+            for (String line : tableLines) {
+                System.out.println(WHITE_BORDER + padding + line + RESET);
+            }
+
+            int choice = validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);
             switch (choice) {
                 case 1:
                     OrderManager.viewAllCustomerOrders();
@@ -40,10 +71,10 @@ public class StaffController {
                     customerController.start();
                     break;
                 case 0:
-                    System.out.println("\tExiting staffController menu...");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Exiting staffController menu...", ColorFormatter.RED + ColorFormatter.BOLD)));
                     return;
                 default:
-                    System.out.println("\tInvalid choice. Please try again.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -54,8 +85,6 @@ public class StaffController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH:mm");
         return sdf.format(date);
     }
-
-
 
     //------------------- Method to validate integer input within a range -------------------
     private int validateIntegerInput(Scanner scanner, String prompt, int min, int max) {
@@ -69,14 +98,21 @@ public class StaffController {
             try {
                 int value = Integer.parseInt(input);
                 if (value < min || value > max) {
-                    System.out.println("\tInput out of range. Please enter a number between " + min + " and " + max + ".");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Input out of range. Please enter a number between " + min + " and " + max + ".", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     return value;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\tInvalid input. Please enter a valid numeric value.");
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
 
+    // test staff controller
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        OrderService orderService = new OrderService();
+        StaffController staffController = new StaffController(scanner, orderService);
+        staffController.start();
+    }
 }

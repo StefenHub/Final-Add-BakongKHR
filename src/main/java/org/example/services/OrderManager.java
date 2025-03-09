@@ -4,6 +4,8 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
+import org.example.utils.ColorFormatter;
+import org.example.utils.ConsoleFormatter;
 import org.example.utils.DatabaseConnection;
 import org.nocrala.tools.texttablefmt.*;
 
@@ -17,11 +19,12 @@ public class OrderManager {
 
         while (true) {
             displayOrders(currentPage);
-            System.out.println("\t📄 Page " + currentPage + " of " + totalPages);
-            System.out.println("\t🚪 Options: [➡️ N] Next | [⬅️ P] Previous | [❌ Q] Quit");
+
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Page " + currentPage + " of " + totalPages, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Options: [➡️ N] Next | [⬅️ P] Previous | [❌ Q] Quit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             while (true) {
-                System.out.print("\t👉 Enter choice: ");
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 String choice = scanner.nextLine().trim().toLowerCase();
 
                 if (choice.equals("n")) {
@@ -29,20 +32,20 @@ public class OrderManager {
                         currentPage++;
                         break;
                     } else {
-                        System.out.println("\t❌ You are already on the last page.");
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ You are already on the last page.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     }
                 } else if (choice.equals("p")) {
                     if (currentPage > 1) {
                         currentPage--;
                         break;
                     } else {
-                        System.out.println("\t❌ You are already on the first page.");
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ You are already on the first page.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     }
                 } else if (choice.equals("q")) {
-                    System.out.println("\t❌ Exiting pagination view.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Exiting pagination view.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     return;
                 } else {
-                    System.out.println("\t❌ Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
         }
@@ -88,7 +91,7 @@ public class OrderManager {
             }
 
         } catch (SQLException e) {
-            System.err.println("\t❌ Error retrieving customer orders: " + e.getMessage());
+            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving customer orders: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
         }
     }
@@ -104,7 +107,7 @@ public class OrderManager {
                 return (int) Math.ceil((double) totalOrders / PAGE_SIZE);
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error fetching order count: " + e.getMessage());
+            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error fetching order count: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
         return 1;
     }
@@ -113,5 +116,10 @@ public class OrderManager {
         if (timestamp == null) return "N/A";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return sdf.format(timestamp);
+    }
+
+    // test orderManager
+    public static void main(String[] args) {
+        viewAllCustomerOrders();
     }
 }

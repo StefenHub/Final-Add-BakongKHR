@@ -1,8 +1,6 @@
 package org.example.services;
 
-import org.example.utils.DatabaseConnection;
-import org.example.utils.InputValidator;
-import org.example.utils.Utils;
+import org.example.utils.*;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -14,25 +12,26 @@ import java.util.*;
 public class MenuItemManager {
 
     // ------------------ Delete Menu Item ------------------
+    // ------------------ Delete Menu Item ------------------
     public static void deleteMenuItem(Scanner scanner) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             // Step 1: Fetch and Display Categories
             List<String> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("\t❌ No categories available. Please add a category first.");
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
-            System.out.println("\n\t--- Select a Category ---");
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             CategoryManager.displayCategories();
 
-            int categoryChoice = Utils.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return;
 
             String selectedCategory = categories.get(categoryChoice - 1);
 
             // Step 2: Display Items in the Selected Category
-            System.out.println("\n\t--- Items in Category: " + selectedCategory + " ---");
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategory + " ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             String sql = "SELECT * FROM menuitemsadmin WHERE category = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, selectedCategory);
@@ -60,16 +59,21 @@ public class MenuItemManager {
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }
                 if (count == 1) {
-                    System.out.println("\t❌ No items available in the selected category.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No items available in the selected category.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     return;
                 }
-                System.out.println(table.render());
+                System.out.println(ConsoleFormatter.centerText(table.render()));
             }
 
             // Step 3: Enter Item ID to Delete
-            System.out.print("\tEnter the Item ID to delete: ");
-            int itemId = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the Item ID to delete: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            int itemId;
+            try {
+                itemId = Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                return;
+            }
 
             // Step 4: Delete the Item
             String deleteSql = "DELETE FROM menuitemsadmin WHERE item_id = ?";
@@ -78,13 +82,13 @@ public class MenuItemManager {
                 int rowsDeleted = deleteStmt.executeUpdate();
 
                 if (rowsDeleted > 0) {
-                    System.out.println("\t✅ Menu item deleted successfully!");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Menu item deleted successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 } else {
-                    System.out.println("\t❌ Item ID not found.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Item ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
     private static final List<String> VALID_CATEGORIES = Arrays.asList("Appetizers", "Main Course", "Beverages", "Desserts");
@@ -118,15 +122,15 @@ public class MenuItemManager {
             // Step 1: Fetch and Display Categories
             List<String> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println("\t❌ No categories available. Please add a category first.");
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
-            System.out.println("\n\t--- Select a Category ---");
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             CategoryManager.displayCategories();
 
             // Step 2: Validate Category Selection
-            int categoryChoice = Utils.validateIntegerInput(scanner, "\tEnter the category number ([b] to go back): ", 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return; // User chose to go back
 
             String category = categories.get(categoryChoice - 1);
@@ -134,31 +138,31 @@ public class MenuItemManager {
             // Step 3: Validate Item Name
             String name;
             while (true) {
-                System.out.print("\tEnter item name: ");
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter item name: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 name = scanner.nextLine().trim();
                 if (name.isEmpty()) {
-                    System.out.println("\t❌ Item name cannot be empty. Please try again.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Item name cannot be empty. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else if (!name.matches("[a-zA-Z0-9\\s]+")) {
-                    System.out.println("\t❌ Invalid item name. Only alphanumeric characters and spaces are allowed.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid item name. Only alphanumeric characters and spaces are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     break; // Valid name
                 }
             }
 
             // Step 4: Optional Description
-            System.out.print("\tEnter item description (optional): ");
+            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter item description (optional): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             String description = scanner.nextLine().trim();
 
             // Step 5: Validate Size
             String size;
             while (true) {
-                System.out.print("\tEnter size [(S, M, L, XL, etc.) or press Enter to skip]: ");
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter size [(S, M, L, XL, etc.) or press Enter to skip]: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 size = scanner.nextLine().trim().toUpperCase();
                 if (size.isEmpty()) {
                     size = null; // Allow skipping size
                     break;
                 } else if (!size.matches("[A-Z]+")) {
-                    System.out.println("\t❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     break; // Valid size
                 }
@@ -167,41 +171,39 @@ public class MenuItemManager {
             // Step 6: Validate Base Price
             double basePrice;
             while (true) {
-                System.out.print("\tEnter base price: ");
-                String basePriceInput = scanner.nextLine().trim();
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter base price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 try {
-                    basePrice = Double.parseDouble(basePriceInput);
+                    basePrice = Double.parseDouble(scanner.nextLine().trim());
                     if (basePrice <= 0) {
-                        System.out.println("\t❌ Base price must be greater than zero.");
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Base price must be greater than zero.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid base price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for base price.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
             // Step 7: Validate Sell Price
             double sellPrice;
             while (true) {
-                System.out.print("\tEnter sell price: ");
-                String sellPriceInput = scanner.nextLine().trim();
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter sell price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 try {
-                    sellPrice = Double.parseDouble(sellPriceInput);
+                    sellPrice = Double.parseDouble(scanner.nextLine().trim());
                     if (sellPrice < basePrice) {
-                        System.out.println("\t❌ Sell price must be greater than or equal to the base price.");
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Sell price must be greater than or equal to the base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid sell price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for sell price.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
             // Step 8: Validate Discount
             double discount = 0.0;
             while (true) {
-                System.out.print("\tEnter discount (press Enter to skip): ");
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter discount (press Enter to skip): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 String discountInput = scanner.nextLine().trim();
                 if (discountInput.isEmpty()) {
                     break; // No discount
@@ -209,12 +211,12 @@ public class MenuItemManager {
                 try {
                     discount = Double.parseDouble(discountInput);
                     if (discount < 0 || discount > sellPrice) {
-                        System.out.println("\t❌ Discount must be between 0 and the sell price.");
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Discount must be between 0 and the sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid discount
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("\t❌ Invalid input. Please enter a valid numeric value for discount.");
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for discount.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
@@ -229,10 +231,10 @@ public class MenuItemManager {
                 pstmt.setDouble(6, sellPrice);
                 pstmt.setDouble(7, discount);
                 pstmt.executeUpdate();
-                System.out.println("\t✅ Menu item added successfully!");
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Menu item added successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 

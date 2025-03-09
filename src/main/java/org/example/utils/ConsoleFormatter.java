@@ -25,27 +25,26 @@ public class ConsoleFormatter {
 
     public static void printCenteredTable(String renderedTable) {
         int terminalWidth = getTerminalWidth();
-
-        // Calculate maximum width of the table
-        int maxTableWidth = 0;
         for (String line : renderedTable.split("\n")) {
-            maxTableWidth = Math.max(maxTableWidth, line.length());
-        }
-
-        // Calculate padding based on max table width
-        int padding = Math.max((terminalWidth - maxTableWidth) / 2, 0);
-
-        for (String line : renderedTable.split("\n")) {
+            int padding = Math.max((terminalWidth - line.length()) / 2, 0);
             System.out.println(" ".repeat(padding) + line);
         }
     }
 
-
     public static void printCategoryHeader(String category) {
-        System.out.println("\n" + centerText("📌 Category: " + category));
+        String coloredCategory = ColorFormatter.colorText("📌 Category: " + category, ColorFormatter.YELLOW);
+        System.out.println("\n" + centerText(coloredCategory));
     }
 
     public static void printSeparator() {
-        System.out.println(centerText("═".repeat(50))); // Creates a visual separator
+        System.out.println(centerText(ColorFormatter.colorText("═".repeat(50), ColorFormatter.BLUE)));
+    }
+
+    public static void printErrorMessage(String message) {
+        System.out.println(centerText(ColorFormatter.colorText("⚠️ " + message, ColorFormatter.RED)));
+    }
+
+    public static void printSuccessMessage(String message) {
+        System.out.println(centerText(ColorFormatter.colorText("✅ " + message, ColorFormatter.GREEN)));
     }
 }

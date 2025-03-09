@@ -14,18 +14,16 @@ public class PaginationFormatter {
     }
 
     public void printPaginationInfo() {
-        String pageInfo = "📄 Page " + currentPage + " of " + totalPages;
-        String paginationControls = "[N] Next  |  [P] Previous  |  [E] Exit";
-        String chooseOption = "👉 Choose an option: ";
-
-        // Get the longest string for alignment reference
-        int maxLength = Math.max(pageInfo.length(), Math.max(paginationControls.length(), chooseOption.length()));
+        String pageInfo = ColorFormatter.colorText("📄 Page " + currentPage + " of " + totalPages, ColorFormatter.CYAN);
+        String paginationControls = ColorFormatter.colorText("[N] Next", ColorFormatter.GREEN) + "  |  " +
+                ColorFormatter.colorText("[P] Previous", ColorFormatter.YELLOW) + "  |  " +
+                ColorFormatter.colorText("[E] Exit", ColorFormatter.RED);
+        String chooseOption = ColorFormatter.colorText("👉 Choose an option: ", ColorFormatter.PURPLE);
 
         System.out.println("\n" + ConsoleFormatter.centerText(pageInfo));
         System.out.println(ConsoleFormatter.centerText(paginationControls));
-        System.out.print(ConsoleFormatter.centerText(chooseOption)); // Ensures perfect alignment
+        System.out.print(ConsoleFormatter.centerText(chooseOption));
     }
-
 
     public String getUserChoice() {
         return scanner.next().trim().toLowerCase();
@@ -41,7 +39,7 @@ public class PaginationFormatter {
                         currentPage++;
                         return true;
                     } else {
-                        System.out.println(ConsoleFormatter.centerText("❌ Already on the last page."));
+                        ConsoleFormatter.printErrorMessage("❌ Already on the last page.");
                     }
                     break;
                 case "p":
@@ -49,14 +47,14 @@ public class PaginationFormatter {
                         currentPage--;
                         return true;
                     } else {
-                        System.out.println(ConsoleFormatter.centerText("❌ Already on the first page."));
+                        ConsoleFormatter.printErrorMessage("❌ Already on the first page.");
                     }
                     break;
                 case "e":
-                    System.out.println(ConsoleFormatter.centerText("🚪 Exiting menu view."));
+                    ConsoleFormatter.printSuccessMessage("🚪 Exiting menu view.");
                     return false;
                 default:
-                    System.out.println(ConsoleFormatter.centerText("⚠️ Invalid input! Try again."));
+                    ConsoleFormatter.printErrorMessage("⚠️ Invalid input! Try again.");
             }
         }
     }

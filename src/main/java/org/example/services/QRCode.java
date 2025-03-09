@@ -9,6 +9,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import kh.gov.nbc.bakong_khqr.BakongKHQR;
 import kh.gov.nbc.bakong_khqr.model.*;
+import org.example.utils.ColorFormatter;
+import org.example.utils.ConsoleFormatter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,14 +55,15 @@ public class QRCode {
             String md5 = response.getData().getMd5();
 
             if (qrText == null || qrText.isEmpty()) {
-                System.out.println("⚠️ Error: QR Code Data is empty!");
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Error: QR Code Data is empty!", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
                 return;
             }
 
             BufferedImage qrImage = generateQRImage(qrText, 300, 300);
             displayQRPopup(qrImage, md5);
         } else {
-            System.out.println("\n❌ Error: " + response.getKHQRStatus().getMessage());
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: " + response.getKHQRStatus().getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+
         }
     }
 
@@ -177,14 +180,15 @@ public class QRCode {
                     String responseMessage = jsonResponse.path("responseMessage").asText();
 
                     if (responseCode == 0) {
-                        System.out.println("\t✅ Success: " + responseMessage);
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+
 //                        System.out.println("\t🔹 Data: " + jsonResponse.path("data").toPrettyString());
                         return true;
                     } else {
 //                        System.out.println("\t⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
                     }
                 } else {
-                    System.out.println("\t❌ API Error: " + response.statusCode() + " - " + response.body());
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ API Error: " + response.statusCode() + " - " + response.body(), ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
 
                 attempt++;
@@ -193,7 +197,7 @@ public class QRCode {
 
 //            System.out.println("\t⏳ Transaction validation failed after multiple attempts.");
         } catch (Exception e) {
-            System.err.println("\tException: " + e.getMessage());
+            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Exception: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
 
         return false;

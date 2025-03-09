@@ -14,7 +14,7 @@ public class CustomerMenuViewer {
         try (Connection conn = DatabaseConnection.getConnection()) {
             int totalPages = getTotalPages(conn);
             if (totalPages == 0) {
-                System.out.println("\n" + ConsoleFormatter.centerText("📭 No menu items available."));
+                ConsoleFormatter.printErrorMessage("📭 No menu items available.");
                 return;
             }
 
@@ -28,8 +28,20 @@ public class CustomerMenuViewer {
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText("⚠️ Database connection error: " + e.getMessage()));
+            ConsoleFormatter.printErrorMessage("⚠️ Database connection error: " + e.getMessage());
         }
+    }
+
+    private static int getTotalPages(Connection conn) throws SQLException {
+        String countSql = "SELECT COUNT(*) FROM menuitemsadmin";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(countSql)) {
+            if (rs.next()) {
+                int totalItems = rs.getInt(1);
+                return (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
+            }
+        }
+        return 0;
     }
 
     private static void displayMenuItems(Connection conn, int page) {
@@ -43,7 +55,7 @@ public class CustomerMenuViewer {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                System.out.println("\n" + ConsoleFormatter.centerText("🚫 No items found."));
+                ConsoleFormatter.printErrorMessage("🚫 No items found.");
                 return;
             }
 
@@ -71,44 +83,32 @@ public class CustomerMenuViewer {
                 table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.RIGHT));
             }
 
-            if (table != null) {
-                ConsoleFormatter.printCenteredTable(table.render());
-            }
+            ConsoleFormatter.printCenteredTable(table.render());
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText("⚠️ Error retrieving menu items: " + e.getMessage()));
+            ConsoleFormatter.printErrorMessage("⚠️ Error retrieving menu items: " + e.getMessage());
         }
     }
 
     private static Table createTable() {
-        Table table = new Table(6, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
-        CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
-
-        table.addCell(" No. ", centerStyle);
-        table.addCell(" Name ", centerStyle);
-        table.addCell(" Description ", centerStyle);
-        table.addCell(" Size ", centerStyle);
-        table.addCell(" Sell Price ", centerStyle);
-        table.addCell(" Discount ", centerStyle);
-
+        Table table = new Table(6, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+        table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
         return table;
     }
 
     private static String trimDescription(String description) {
-        return (description.length() > 50) ? description.substring(0, 47) + "..." : description;
-    }
-
-    private static int getTotalPages(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM menuitemsadmin";
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                int totalItems = rs.getInt(1);
-                return (totalItems == 0) ? 0 : (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
-            }
+        int maxLength = 30;
+        if (description.length() > maxLength) {
+            return description.substring(0, maxLength - 3) + "...";
         }
-        return 1;
+        return description;
     }
 
+    // test
     public static void main(String[] args) {
         viewMenuItemsCustomer();
     }
