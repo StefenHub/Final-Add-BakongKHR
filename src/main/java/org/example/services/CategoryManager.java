@@ -10,9 +10,7 @@ import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class CategoryManager {
 
@@ -28,33 +26,37 @@ public class CategoryManager {
     static String padding = " ".repeat(leftPadding);
 
     // --------------- Fetch all categories from the database ---------------
-    public static List<String> getCategories() {
-        List<String> categories = new ArrayList<>();
+    public static List<Map<String, Object>> getCategories() {
+        List<Map<String, Object>> categories = new ArrayList<>();
+
         try (Connection conn = DatabaseConnection.connect()) {
             if (conn == null) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\t❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
-                return categories;
+                throw new SQLException("❌ Failed to connect to the database.");
             }
 
-            // Fetch distinct categories from menuitemsadmin table
-            String sql = "SELECT DISTINCT category FROM menuitemsadmin ORDER BY category";
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery(sql)) {
+            String sql = "SELECT id, name FROM categories ORDER BY id";
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    categories.add(rs.getString("category"));
+                    Map<String, Object> category = new HashMap<>();
+                    category.put("id", rs.getInt("id"));
+                    category.put("name", rs.getString("name"));
+                    categories.add(category);
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\t❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            e.printStackTrace(); // ✅ Print full stack trace for debugging
         }
         return categories;
     }
 
+
     // --------------- Display categories in a table ---------------
     public static void displayCategories() {
-        List<String> categories = getCategories();
+        List<Map<String, Object>> categories = getCategories();
         if (categories.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\tNo categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
 
@@ -62,20 +64,12 @@ public class CategoryManager {
         table.addCell(ColorFormatter.colorText("ID", ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
         table.addCell(ColorFormatter.colorText("Category Name", ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
-        for (int i = 0; i < categories.size(); i++) {
-            table.addCell(ColorFormatter.colorText(String.valueOf(i + 1), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(ColorFormatter.colorText(categories.get(i), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        for (Map<String, Object> category : categories) {
+            table.addCell(ColorFormatter.colorText(String.valueOf(category.get("id")), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(ColorFormatter.colorText((String) category.get("name"), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
         }
-        System.out.println(ConsoleFormatter.centerText(table.render()));
-    }
 
-    // --------------- Get category by index ---------------
-    public static String getCategoryFromNumber(int categoryNumber) {
-        List<String> categories = getCategories();
-        if (categoryNumber < 1 || categoryNumber > categories.size()) {
-            return "Unknown";
-        }
-        return categories.get(categoryNumber - 1);
+        System.out.println(ConsoleFormatter.centerText(table.render()));
     }
 
     // Add categories
@@ -118,19 +112,24 @@ public class CategoryManager {
     // Remove categories
     public static void removeCategory(Scanner scanner) {
         displayCategories();
-        List<String> categories = getCategories();
+        List<Map<String, Object>> categories = getCategories();
         if (categories.isEmpty()) return;
 
-        int categoryNumber = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the number of the category to remove ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
+        int categoryNumber = Utils.validateIntegerInput(scanner,
+                ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the number of the category to remove ([b] to go back): ",
+                        ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
+
         if (categoryNumber == -1) return;
 
-        String categoryToRemove = getCategoryFromNumber(categoryNumber);
-        if (categoryToRemove.equals("Unknown")) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid category number.", ColorFormatter.RED + ColorFormatter.BOLD)));
-            return;
-        }
+        // ✅ Get category ID instead of name
+        Map<String, Object> selectedCategory = categories.get(categoryNumber - 1);
+        int categoryId = (int) selectedCategory.get("id");
+        String categoryName = (String) selectedCategory.get("name");
 
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Are you sure you want to remove the category '" + categoryToRemove + "' and all its items? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText(
+                "Are you sure you want to remove the category '" + categoryName + "' and all its items? (y/n): ",
+                ColorFormatter.GREEN + ColorFormatter.BOLD)));
+
         String confirm = scanner.nextLine().trim().toLowerCase();
         if (!confirm.equals("y")) {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Removal canceled.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
@@ -143,21 +142,25 @@ public class CategoryManager {
                 return;
             }
 
-            // 1. Remove menu items under this category
-            String deleteMenuItems = "DELETE FROM menuitemsadmin WHERE category = ?";
+            conn.setAutoCommit(false); // ✅ Start transaction
+
+            // ✅ 1. Remove menu items under this category
+            String deleteMenuItems = "DELETE FROM menuitemsadmin WHERE category_id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(deleteMenuItems)) {
-                pstmt.setString(1, categoryToRemove);
+                pstmt.setInt(1, categoryId); // ✅ Use category ID
                 pstmt.executeUpdate();
             }
 
-            // 2. Remove the category itself
-            String deleteCategory = "DELETE FROM categories WHERE name = ?";
+            // ✅ 2. Remove the category itself
+            String deleteCategory = "DELETE FROM categories WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(deleteCategory)) {
-                pstmt.setString(1, categoryToRemove);
+                pstmt.setInt(1, categoryId); // ✅ Use category ID
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Category '" + categoryToRemove + "' and all its items removed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    conn.commit(); // ✅ Commit transaction
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Category '" + categoryName + "' and all its items removed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 } else {
+                    conn.rollback(); // ✅ Rollback if deletion failed
                     System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to remove category.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
@@ -165,6 +168,7 @@ public class CategoryManager {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
+
 
     // Manage categories
     public static void manageCategories(Scanner scanner) {

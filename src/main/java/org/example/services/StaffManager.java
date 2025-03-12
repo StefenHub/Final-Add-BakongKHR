@@ -1,5 +1,6 @@
 package org.example.services;
 
+import org.example.utils.ConsoleFormatter;
 import org.example.utils.DatabaseConnection;
 import org.example.utils.Utils;
 import org.mindrot.jbcrypt.BCrypt;
@@ -13,60 +14,74 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static org.example.utils.ColorFormatter.GREEN;
+
 public class StaffManager {
+
+    static final String RESET = "\u001B[0m";
+    static final String BOLD_BLUE = "\033[1;34m"; // Blue title
+    static final String BRIGHT_WHITE = "\033[97m"; // White text for options
+    static final String WHITE_BORDER = "\033[97m"; // White border
+    static final String BLUE = "\u001B[34m"; // Blue for padding
+    static final String RED = "\033[1;31m"; // Red for errors
+
+    static int consoleWidth = 180; // Console width
+    static int tableWidth = 100; // Wider table width
+    static int leftPadding = (consoleWidth - tableWidth) / 2;
+    static String padding = " ".repeat(leftPadding);
 
     public static void addStaff(Scanner scanner) {
         String full_name;
         do {
-            System.out.print("\tEnter full name: ");
+            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter full name: " + RESET));
             full_name = scanner.nextLine().trim();
             if (!NAME_PATTERN.matcher(full_name).matches()) {
-                System.out.println("\t❌ Invalid full name! Only letters and spaces are allowed.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid full name! Only letters and spaces are allowed." + RESET));
             }
         } while (!NAME_PATTERN.matcher(full_name).matches());
 
         String userName;
         do {
-            System.out.print("\tEnter username: ");
+            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter username: " + RESET));
             userName = scanner.nextLine().trim();
             if (!USERNAME_PATTERN.matcher(userName).matches()) {
-                System.out.println("\t❌ Invalid username! Must be lowercase letters and numbers only.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid username! Must be lowercase letters and numbers only." + RESET));
             }
         } while (!USERNAME_PATTERN.matcher(userName).matches());
 
         String password;
         do {
-            System.out.print("\tEnter password: ");
+            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter password: " + RESET));
             password = scanner.nextLine().trim();
             if (!PASSWORD_PATTERN.matcher(password).matches()) {
-                System.out.println("\t❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character." + RESET));
             }
         } while (!PASSWORD_PATTERN.matcher(password).matches());
 
         String email;
         do {
-            System.out.print("\tEnter email: ");
+            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter email: " + RESET));
             email = scanner.nextLine().trim();
             if (!EMAIL_PATTERN.matcher(email).matches()) {
-                System.out.println("\t❌ Invalid email! Must start with a letter and end with @gmail.com.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid email! Must start with a letter and end with @gmail.com." + RESET));
             }
         } while (!EMAIL_PATTERN.matcher(email).matches());
 
         String phone_number;
         do {
-            System.out.print("\tEnter phone number: ");
+            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter phone number: " + RESET));
             phone_number = scanner.nextLine().trim();
             if (!PHONE_PATTERN.matcher(phone_number).matches()) {
-                System.out.println("\t❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits." + RESET));
             }
         } while (!PHONE_PATTERN.matcher(phone_number).matches());
 
         String role;
         do {
-            System.out.print("\tEnter role: ");
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter role: " + RESET));
             role = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(role.toLowerCase())) {
-                System.out.println("\t❌ Invalid role! Must be one of: staffController, admin, kitchen.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid role! Must be one of: staffController, admin, kitchen." + RESET));
             }
         } while (!VALID_ROLES.contains(role.toLowerCase()));
 
@@ -85,41 +100,40 @@ public class StaffManager {
             pstmt.setString(6, phoneNumber);
             pstmt.setString(7, role);
             pstmt.setTimestamp(8, timestamp);
-            pstmt.executeUpdate();
-            System.out.println("\tStaff added successfully!");
+            System.out.println(ConsoleFormatter.centerText(BOLD_BLUE + "✅ Staff added successfully!" + RESET));
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
     public static void updateStaff(Scanner scanner) {
-        System.out.print("\tEnter staffController UUID: ");
+        System.out.print(ConsoleFormatter.centerText("\tEnter staffController UUID: "));
         UUID uuid = UUID.fromString(scanner.nextLine().trim());
 
         String newName;
         do {
-            System.out.print("\tEnter new full name: ");
+            System.out.print(ConsoleFormatter.centerText("\tEnter new full name: "));
             newName = scanner.nextLine().trim();
             if (!NAME_PATTERN.matcher(newName).matches()) {
-                System.out.println("\t❌ Invalid full name! Only letters and spaces are allowed.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid full name! Only letters and spaces are allowed." + RESET));
             }
         } while (!NAME_PATTERN.matcher(newName).matches());
 
         String newPhone;
         do {
-            System.out.print("\tEnter new phone: ");
+            System.out.print(ConsoleFormatter.centerText("\tEnter new phone: "));
             newPhone = scanner.nextLine().trim();
             if (!PHONE_PATTERN.matcher(newPhone).matches()) {
-                System.out.println("\t❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits." + RESET));
             }
         } while (!PHONE_PATTERN.matcher(newPhone).matches());
 
         String newRole;
         do {
-            System.out.print("\tEnter new role: ");
+            System.out.print(ConsoleFormatter.centerText("\tEnter new role: "));
             newRole = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(newRole.toLowerCase())) {
-                System.out.println("\t❌ Invalid role! Must be one of: staffController, admin, kitchen.");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid role! Must be one of: staffController, admin, kitchen." + RESET));
             }
         } while (!VALID_ROLES.contains(newRole.toLowerCase()));
 
@@ -136,12 +150,12 @@ public class StaffManager {
             pstmt.setObject(4, uuid);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
-                System.out.println("\tStaff updated successfully!");
+                System.out.println(ConsoleFormatter.centerText(BOLD_BLUE + "✅ Staff updated successfully!" + RESET));
             } else {
-                System.out.println("\tStaff not found!");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Staff not found!" + RESET));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
@@ -152,31 +166,47 @@ public class StaffManager {
             pstmt.setObject(1, uuid);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
-                System.out.println("\tStaff removed successfully!");
+                System.out.println(ConsoleFormatter.centerText(BOLD_BLUE + "✅ Staff removed successfully!" + RESET));
             } else {
-                System.out.println("\tStaff not found!");
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Staff not found!" + RESET));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
     public static void manageStaff(Scanner scanner) {
         while (true) {
-            System.out.print("""
-                                \u001B[34m
-                                ╔════════════════════════════════════╗
-                                ║       👥 Staff Management          ║
-                                ╠════════════════════════════════════╣
-                                ║   \u001B[33m[1]. ➕ Add Staff\u001B[34m                ║
-                                ║   \u001B[33m[2]. 👀 View All Staff\u001B[34m           ║
-                                ║   \u001B[33m[3]. ✏️ Update Staff\u001B[34m             ║
-                                ║   \u001B[33m[4]. 🗑️ Remove Staff\u001B[34m             ║
-                                ║   \u001B[31m[5]. ❌ Exit\u001B[34m                     ║
-                                ╚════════════════════════════════════╝ \u001B[0m
-                            """);
+            // Create a table with a SINGLE wide column
+            Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
+            table.setColumnWidth(0, 80, 90); // Explicitly setting column width wider
 
-            int choice = Utils.validateIntegerInput(scanner, "\t👉 Enter your choice: ", 1, 5);
+            CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
+            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT); // Left alignment for numbers
+
+            // Title Row (Centered)
+            table.addCell(BOLD_BLUE + "Restaurant Ordering System" + RESET, centerStyle);
+
+            // Menu Options (Numbers Left-Aligned)
+            String[] options = {
+                    "1.  Add Staff",
+                    "2.  View All Staff",
+                    "3.  Update Staff",
+                    "4.  Remove Staff",
+                    "5.  Exit"
+            };
+
+            for (String option : options) {
+                table.addCell(BOLD_BLUE + option.trim() + RESET, leftStyle); // Left-align & reset colors properly
+            }
+
+            // Print the Table with WHITE Borders
+            String[] tableLines = table.render().split("\n");
+            for (String line : tableLines) {
+                System.out.println(WHITE_BORDER + padding + line + RESET);
+            }
+
+            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(BOLD_BLUE + "👉 Enter your choice: " + RESET), 1, 5);
             switch (choice) {
                 case 1:
                     addStaff(scanner);
@@ -188,7 +218,7 @@ public class StaffManager {
                     updateStaff(scanner);
                     break;
                 case 4:
-                    System.out.print("\tEnter staffController UUID: ");
+                    System.out.print(ConsoleFormatter.centerText("\tEnter staffController UUID: "));
                     UUID uuidToRemove = UUID.fromString(scanner.nextLine().trim());
                     removeStaff(uuidToRemove);
                     break;
@@ -227,9 +257,9 @@ public class StaffManager {
                 table.addCell(rs.getString("role"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getTimestamp("date_time_added").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
-            System.out.println(table.render());
+            System.out.println(ConsoleFormatter.centerText(table.render()));
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(ConsoleFormatter.centerText(RED + "���️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 

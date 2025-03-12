@@ -67,7 +67,7 @@ public class ReportManager {
     public static void generateRevenueReport(LocalDate startDate, LocalDate endDate) {
         String sql = "SELECT SUM((sell_price - discount) * quantity) AS total_revenue " +
                 "FROM order_items " +
-                "WHERE DATE(order_date) BETWEEN ? AND ?";
+                "WHERE DATE(order_date_column) BETWEEN ? AND ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -91,9 +91,9 @@ public class ReportManager {
     }
 
     public static void generateProfitReport(LocalDate startDate, LocalDate endDate) {
-        String sql = "SELECT SUM((sell_price - base_price - COALESCE(discount, 0)) * quantity) AS total_profit " +
+        String sql = "SELECT SUM((sell_price - base_price_column - COALESCE(discount, 0)) * quantity) AS total_profit " +
                 "FROM order_items " +
-                "WHERE DATE(order_date) BETWEEN ? AND ?";
+                "WHERE DATE(order_date_column) BETWEEN ? AND ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

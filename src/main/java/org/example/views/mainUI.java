@@ -51,7 +51,7 @@ public class mainUI {
                 "2.  Chef",
                 "3.  Customer",
                 "4.  Admin",
-                "0.  Exit"
+                "5.  Exit"
         };
 
         for (String option : options) {

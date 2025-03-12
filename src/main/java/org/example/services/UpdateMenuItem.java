@@ -14,13 +14,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class UpdateMenuItem {
     public static void updateMenuItem(Scanner scanner) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             // Step 1: Fetch and Display Categories
-            List<String> categories = CategoryManager.getCategories();
+            List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
@@ -35,13 +36,13 @@ public class UpdateMenuItem {
                 return;
             }
 
-            String selectedCategory = categories.get(categoryChoice - 1);
+            int selectedCategoryId = (int) categories.get(categoryChoice - 1).get("id");
 
             // Step 2: Display Items in the Selected Category
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategory + " ---", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            String sql = "SELECT * FROM menuitemsadmin WHERE category = ? ORDER BY name";
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategoryId + " ---", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            String sql = "SELECT * FROM menuitemsadmin WHERE category_id = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setString(1, selectedCategory);
+                pstmt.setInt(1, selectedCategoryId);
                 ResultSet rs = pstmt.executeQuery();
 
                 Table table = new Table(8, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);

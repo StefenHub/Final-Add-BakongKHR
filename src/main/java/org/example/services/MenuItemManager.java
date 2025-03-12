@@ -11,11 +11,13 @@ import java.util.*;
 
 public class MenuItemManager {
 
+    private static int selectedCategoryId;
+
     // ------------------ Delete Menu Item ------------------
     public static void deleteMenuItem(Scanner scanner) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             // Step 1: Fetch and Display Categories
-            List<String> categories = CategoryManager.getCategories();
+            List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
@@ -27,13 +29,13 @@ public class MenuItemManager {
             int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return;
 
-            String selectedCategory = categories.get(categoryChoice - 1);
+            int selectedCategoryId = (int) categories.get(categoryChoice - 1).get("id");
 
             // Step 2: Display Items in the Selected Category
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategory + " ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategoryId + " ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             String sql = "SELECT * FROM menuitemsadmin WHERE category_id = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setString(1, selectedCategory);
+                pstmt.setInt(1, selectedCategoryId);
                 ResultSet rs = pstmt.executeQuery();
 
                 Table table = new Table(8, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
@@ -92,35 +94,12 @@ public class MenuItemManager {
     }
 
     private static final List<String> VALID_CATEGORIES = Arrays.asList("Appetizers", "Main Course", "Beverages", "Desserts");
-//
-//    public static String validateCategory(Scanner scanner) {
-//        System.out.println("\n\t--- Select a Category ---");
-//        for (int i = 0; i < VALID_CATEGORIES.size(); i++) {
-//            System.out.println((i + 1) + ". " + VALID_CATEGORIES.get(i));
-//        }
-//
-//        while (true) {
-//            System.out.print("\tEnter the category number: ");
-//            String input = scanner.nextLine().trim();
-//
-//            try {
-//                int choice = Integer.parseInt(input);
-//                if (choice >= 1 && choice <= VALID_CATEGORIES.size()) {
-//                    return VALID_CATEGORIES.get(choice - 1); // Return selected category
-//                } else {
-//                    System.out.println("\t❌ Invalid choice. Please select a number between 1 and " + VALID_CATEGORIES.size() + ".");
-//                }
-//            } catch (NumberFormatException e) {
-//                System.out.println("\t❌ Invalid input. Please enter a numeric value.");
-//            }
-//        }
-//    }
 
     // ------------------ Add Multiple Menu Items ------------------
     public static void addMenuItem(Scanner scanner) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             // Step 1: Fetch and Display Categories
-            List<String> categories = CategoryManager.getCategories();
+            List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
@@ -133,7 +112,7 @@ public class MenuItemManager {
             int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return; // User chose to go back
 
-            String category = categories.get(categoryChoice - 1);
+            selectedCategoryId = (int) categories.get(categoryChoice - 1).get("id");
 
             // Step 3: Validate Item Name
             String name;
@@ -225,7 +204,7 @@ public class MenuItemManager {
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, name);
                 pstmt.setString(2, description);
-                pstmt.setString(3, category);
+                pstmt.setInt(3, selectedCategoryId); // Use category ID
                 pstmt.setString(4, size); // Null if skipped
                 pstmt.setDouble(5, basePrice);
                 pstmt.setDouble(6, sellPrice);
@@ -241,14 +220,14 @@ public class MenuItemManager {
     public static void viewMenuItemsByCategorySeparately() {
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT id, name FROM categories ORDER BY id")) { // ✅ Fix: Fetch category names
+             ResultSet rs = stmt.executeQuery("SELECT id, name FROM categories ORDER BY id")) {
 
             while (rs.next()) {
-                int categoryId = rs.getInt("id"); // ✅ Fix: Get category ID
-                String categoryName = rs.getString("name"); // ✅ Fix: Get category Name
+                int categoryId = rs.getInt("id");
+                String categoryName = rs.getString("name");
 
                 System.out.println("\n\t📂 --- " + categoryName + " ---");
-                displayItemsByCategory1(String.valueOf(categoryId)); // ✅ Pass category ID as String
+                displayItemsByCategory1(categoryId);
             }
         } catch (SQLException e) {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving categories: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
@@ -256,16 +235,16 @@ public class MenuItemManager {
         }
     }
 
-    private static void displayItemsByCategory1(String categoryId) { // ✅ Changed parameter name for clarity
+    private static void displayItemsByCategory1(int categoryId) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql = "SELECT * FROM menuitemsadmin WHERE category_id = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setString(1, categoryId); // ✅ Fixed: Use correct parameter
+                pstmt.setInt(1, categoryId);
 
                 try (ResultSet rs = pstmt.executeQuery()) {
                     System.out.println("\n📂 --- Category: " + categoryId + " ---");
 
-                    Table table = new Table(5, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL); // ✅ Fixed border style
+                    Table table = new Table(5, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
                     table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     table.addCell("Category ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -277,7 +256,7 @@ public class MenuItemManager {
                         hasItems = true;
                         table.addCell(String.valueOf(rs.getInt("item_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                         table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                        table.addCell(String.valueOf(rs.getInt("category_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER)); // ✅ Fixed
+                        table.addCell(String.valueOf(rs.getInt("category_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                         table.addCell(String.format("$%.2f", rs.getDouble("sell_price")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                         table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                     }
@@ -294,57 +273,4 @@ public class MenuItemManager {
             e.printStackTrace();
         }
     }
-
-//
-//    public static List<Map<String, Object>> getAllMenuItems() {
-//        List<Map<String, Object>> menuItems = new ArrayList<>();
-//        try (Connection conn = DatabaseConnection.getConnection()) {
-//            String sql = "SELECT * FROM menuitemsadmin";
-//            try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-//                while (rs.next()) {
-//                    Map<String, Object> item = new HashMap<>();
-//                    item.put("item_id", rs.getInt("item_id"));
-//                    item.put("name", rs.getString("name"));
-//                    item.put("description", rs.getString("description"));
-//                    item.put("category_id", rs.getString("category_id"));
-//                    item.put("size", rs.getString("size"));
-//                    item.put("base_price", rs.getDouble("base_price"));
-//                    item.put("sell_price", rs.getDouble("sell_price"));
-//                    item.put("discount", rs.getDouble("discount"));
-//                    menuItems.add(item);
-//                }
-//            }
-//        } catch (SQLException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return menuItems;
-//    }
-
-//    public static void displayItemsByCategory1() {
-//        Scanner scanner = new Scanner(System.in);
-//        OrderService orderService = new OrderService();
-//
-//        List<Map<String, Object>> categories = orderService.getCategories();
-//        if (categories.isEmpty()) {
-//            System.out.println("\tNo categories available.");
-//            return;
-//        }
-//
-//        System.out.println("\n\t📋 --- Select a Category ---");
-//        for (int i = 0; i < categories.size(); i++) {
-//            System.out.println("\t" + (i + 1) + ". " + categories.get(i).get("name"));
-//        }
-//
-//        int categoryChoice = InputValidator.validateIntegerInput(scanner, "\t👉 Enter the category number ([b] to go back): ", 1, categories.size());
-//        if (categoryChoice == -1) return;
-//
-//        // ✅ Get selected category details
-//        Map<String, Object> selectedCategory = categories.get(categoryChoice - 1);
-//        int selectedCategoryId = (int) selectedCategory.get("id"); // ✅ Get category ID
-//        String selectedCategoryName = (String) selectedCategory.get("name"); // ✅ Get category name
-//
-//        System.out.println("\n\t📂 Displaying items for category: " + selectedCategoryName);
-//        orderService.displayItemsByCategory(String.valueOf(selectedCategoryId), scanner); // ✅ Pass category ID as String
-//    }
-
 }

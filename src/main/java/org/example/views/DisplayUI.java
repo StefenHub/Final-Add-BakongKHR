@@ -27,9 +27,9 @@ public class DisplayUI {
             }
 
             // Improve input prompt spacing
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
-            int choice = Utils.validateIntegerInput(scanner, "", 0, 4);
+            int choice = Utils.validateIntegerInput(scanner, "", 0, 5);
             if (choice == -1) return; // Exit condition
 
             switch (choice) {
