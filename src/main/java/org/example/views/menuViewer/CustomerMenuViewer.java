@@ -6,65 +6,66 @@ import org.example.utils.PaginationFormatter;
 import org.nocrala.tools.texttablefmt.*;
 
 import java.sql.*;
+import java.util.Scanner;
 
 public class CustomerMenuViewer {
-    private static final int ITEMS_PER_PAGE = 10;
+    private static final String RESET = "\u001B[0m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String RED = "\u001B[31m";
 
     public static void viewMenuItemsCustomer() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            int totalPages = getTotalPages(conn);
-            if (totalPages == 0) {
-                ConsoleFormatter.printErrorMessage("📭 No menu items available.");
+            int totalItems = getTotalItemCount(conn);
+            if (totalItems == 0) {
+                System.out.println(RED + "📭 No menu items available." + RESET);
                 return;
             }
 
-            PaginationFormatter paginator = new PaginationFormatter(totalPages);
+            PaginationFormatter paginator = new PaginationFormatter(totalItems, 5); // Default items per page = 5
 
             while (true) {
-                displayMenuItems(conn, paginator.getCurrentPage());
+                displayMenuItems(conn, paginator.getCurrentPage(), paginator.getItemsPerPage());
 
-                if (!paginator.handlePagination()) {
-                    break;
-                }
+                boolean shouldContinue = paginator.handlePagination();
+                if (!shouldContinue) break; // Exit the loop if the user chooses to exit
             }
         } catch (SQLException e) {
-            ConsoleFormatter.printErrorMessage("⚠️ Database connection error: " + e.getMessage());
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
-    private static int getTotalPages(Connection conn) throws SQLException {
+    private static int getTotalItemCount(Connection conn) throws SQLException {
         String countSql = "SELECT COUNT(*) FROM menuitemsadmin";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(countSql)) {
-            if (rs.next()) {
-                int totalItems = rs.getInt(1);
-                return (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
-            }
+            return rs.next() ? rs.getInt(1) : 0;
         }
-        return 0;
     }
 
-    private static void displayMenuItems(Connection conn, int page) {
-        int offset = (page - 1) * ITEMS_PER_PAGE;
-        String sql = "SELECT item_id, name, description, category, size, sell_price, discount " +
-                "FROM menuitemsadmin ORDER BY category, name LIMIT ? OFFSET ?";
+    private static void displayMenuItems(Connection conn, int page, int itemsPerPage) {
+        int offset = (page - 1) * itemsPerPage;
+        String sql = "SELECT mi.item_id, mi.name, mi.description, c.name AS category_name, mi.size, mi.sell_price, mi.discount " +
+                "FROM menuitemsadmin mi " +
+                "JOIN categories c ON mi.category_id = c.id " +
+                "ORDER BY c.name, mi.name LIMIT ? OFFSET ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, ITEMS_PER_PAGE);
+            stmt.setInt(1, itemsPerPage);
             stmt.setInt(2, offset);
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                ConsoleFormatter.printErrorMessage("🚫 No items found.");
+                System.out.println(ConsoleFormatter.centerText(RED + "🚫 No items found." + RESET));
                 return;
             }
 
             String currentCategory = "";
             Table table = null;
-            int count = 1;
+            int count = offset + 1; // Continuous numbering based on offset
 
             while (rs.next()) {
-                String category = rs.getString("category");
+                String category = rs.getString("category_name");
                 if (!category.equals(currentCategory)) {
                     if (table != null) {
                         ConsoleFormatter.printCenteredTable(table.render());
@@ -72,10 +73,9 @@ public class CustomerMenuViewer {
                     currentCategory = category;
                     ConsoleFormatter.printCategoryHeader(currentCategory);
                     table = createTable();
-                    count = 1;
                 }
 
-                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER)); // Continuous numbering
                 table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(trimDescription(rs.getString("description")), new CellStyle(CellStyle.HorizontalAlign.LEFT));
                 table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -85,9 +85,10 @@ public class CustomerMenuViewer {
 
             ConsoleFormatter.printCenteredTable(table.render());
         } catch (SQLException e) {
-            ConsoleFormatter.printErrorMessage("⚠️ Error retrieving menu items: " + e.getMessage());
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Error retrieving menu items: " + e.getMessage() + RESET));
         }
     }
+
 
     private static Table createTable() {
         Table table = new Table(6, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
@@ -102,13 +103,9 @@ public class CustomerMenuViewer {
 
     private static String trimDescription(String description) {
         int maxLength = 30;
-        if (description.length() > maxLength) {
-            return description.substring(0, maxLength - 3) + "...";
-        }
-        return description;
+        return description.length() > maxLength ? description.substring(0, maxLength - 3) + "..." : description;
     }
 
-    // test
     public static void main(String[] args) {
         viewMenuItemsCustomer();
     }

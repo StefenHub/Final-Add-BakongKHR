@@ -14,38 +14,33 @@ import org.nocrala.tools.texttablefmt.Table;
 
 public class AdminController {
 
-    final String RESET = "\u001B[0m";
-    final String WHITE_BORDER = "\033[97m"; // White border
+    private static final String RESET = "\u001B[0m";
+    private static final String WHITE_BORDER = "\033[97m"; // White border
 
-    int consoleWidth = 180; // Console width
-    int tableWidth = 100; // Wider table width
-    int leftPadding = (consoleWidth - tableWidth) / 2;
-    String padding = " ".repeat(leftPadding);
+    private final int consoleWidth = 180; // Console width
+    private final int tableWidth = 100; // Wider table width
+    private final String padding = " ".repeat((consoleWidth - tableWidth) / 2);
 
-    public void adminPanel() {
-        Scanner scanner = new Scanner(System.in);
-
+    public void adminPanel(Scanner scanner) {
         while (true) {
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
-            table.setColumnWidth(0, 80, 90); // Explicitly setting column width wider
+            table.setColumnWidth(0, 80, 90);
 
             CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
-            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT); // Left alignment for numbers
+            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT);
 
-            // Title Row (Centered)
             table.addCell(ColorFormatter.colorText("WELCOME TO ADMIN DASHBOARD", ColorFormatter.BLUE + ColorFormatter.BOLD), centerStyle);
 
-            // Menu Options (Numbers Left-Aligned)
             String[] options = {
                     "1.  Manage Items",
                     "2.  Manage Categories",
                     "3.  Manage Staff",
                     "4.  Manage Report",
-                    "0.  Exit"
+                    "5.  Exit"
             };
 
             for (String option : options) {
-                table.addCell(ColorFormatter.colorText(option.trim(), ColorFormatter.BLUE + ColorFormatter.BOLD), leftStyle); // Left-align & reset colors properly
+                table.addCell(ColorFormatter.colorText(option.trim(), ColorFormatter.BLUE + ColorFormatter.BOLD), leftStyle);
             }
 
             // Print the Table with WHITE Borders
@@ -54,7 +49,7 @@ public class AdminController {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 4);
+            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 5);
             if (choice == -1) continue;
 
             switch (choice) {
@@ -70,9 +65,10 @@ public class AdminController {
                 case 4:
                     ReportManager.manageReports();
                     break;
-                case 0:
-                    DisplayUI.displayUI();
-                    return;
+                case 5:
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("👋 Exiting... Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    System.exit(0);
+                    break;
                 default:
                     System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
@@ -82,26 +78,24 @@ public class AdminController {
     public void itemPanel(Scanner scanner) {
         while (true) {
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
-            table.setColumnWidth(0, 80, 90); // Explicitly setting column width wider
+            table.setColumnWidth(0, 80, 90);
 
             CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
-            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT); // Left alignment for numbers
+            CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT);
 
-            // Title Row (Centered)
             table.addCell(ColorFormatter.colorText("ITEM MANAGEMENT PANEL", ColorFormatter.BLUE + ColorFormatter.BOLD), centerStyle);
 
-            // Menu Options (Numbers Left-Aligned)
             String[] options = {
                     "1.  Add Menu Items",
                     "2.  Update Menu Items",
                     "3.  Remove Menu Items",
                     "4.  View All Menu Items",
                     "5.  Display Items by Category",
-                    "0.  Exit"
+                    "6.  Exit"
             };
 
             for (String option : options) {
-                table.addCell(ColorFormatter.colorText(option.trim(), ColorFormatter.BLUE + ColorFormatter.BOLD), leftStyle); // Left-align & reset colors properly
+                table.addCell(ColorFormatter.colorText(option.trim(), ColorFormatter.BLUE + ColorFormatter.BOLD), leftStyle);
             }
 
             // Print the Table with WHITE Borders
@@ -110,10 +104,14 @@ public class AdminController {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-            int option = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 5);
-            if (option == -1) continue;
+//            int option = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 6);
+//            if (option == -1) continue;
+            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 5);
+            if (choice == -1) {
+                return;  // This will exit the current menu and go back
+            }
 
-            switch (option) {
+            switch (choice) {
                 case 1:
                     MenuItemManager.addMenuItem(scanner);
                     break;
@@ -129,7 +127,7 @@ public class AdminController {
                 case 5:
                     MenuItemManager.viewMenuItemsByCategorySeparately();
                     break;
-                case 0:
+                case 6:
                     return;
                 default:
                     System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
@@ -137,8 +135,10 @@ public class AdminController {
         }
     }
 
-    // test the adminPanel method
+    // Main method to start the Admin Panel
     public static void main(String[] args) {
-        new AdminController().adminPanel();
+        try (Scanner scanner = new Scanner(System.in)) {
+            new AdminController().adminPanel(scanner);
+        }
     }
 }

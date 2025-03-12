@@ -4,23 +4,32 @@ import java.util.Scanner;
 
 public class PaginationFormatter {
     private int currentPage;
-    private final int totalPages;
-    private final Scanner scanner;
+    private int totalItems;
+    private int itemsPerPage;
+    private Scanner scanner;
 
-    public PaginationFormatter(int totalPages) {
+    public PaginationFormatter(int totalItems, int defaultItemsPerPage) {
+        this.totalItems = totalItems;
+        this.itemsPerPage = defaultItemsPerPage;
         this.currentPage = 1;
-        this.totalPages = totalPages;
         this.scanner = new Scanner(System.in);
     }
 
+    public int getTotalPages() {
+        return (int) Math.ceil((double) totalItems / itemsPerPage);
+    }
+
     public void printPaginationInfo() {
+        int totalPages = getTotalPages();
         String pageInfo = ColorFormatter.colorText("📄 Page " + currentPage + " of " + totalPages, ColorFormatter.CYAN);
         String paginationControls = ColorFormatter.colorText("[N] Next", ColorFormatter.GREEN) + "  |  " +
                 ColorFormatter.colorText("[P] Previous", ColorFormatter.YELLOW) + "  |  " +
+                ColorFormatter.colorText("[C] Change Items per Page", ColorFormatter.BLUE) + "  |  " +
                 ColorFormatter.colorText("[E] Exit", ColorFormatter.RED);
         String chooseOption = ColorFormatter.colorText("👉 Choose an option: ", ColorFormatter.PURPLE);
 
         System.out.println("\n" + ConsoleFormatter.centerText(pageInfo));
+        System.out.println(ConsoleFormatter.centerText("📦 Items per Page: " + itemsPerPage));
         System.out.println(ConsoleFormatter.centerText(paginationControls));
         System.out.print(ConsoleFormatter.centerText(chooseOption));
     }
@@ -29,10 +38,32 @@ public class PaginationFormatter {
         return scanner.next().trim().toLowerCase();
     }
 
+    public void changeItemsPerPage() {
+        while (true) {
+            System.out.print(ColorFormatter.colorText("🔢 Enter items per page: ", ColorFormatter.BLUE));
+            String input = scanner.next().trim();
+            try {
+                int newItemsPerPage = Integer.parseInt(input);
+                if (newItemsPerPage > 0) {
+                    itemsPerPage = newItemsPerPage;
+                    currentPage = 1;
+                    ConsoleFormatter.printSuccessMessage("✅ Items per page updated to " + newItemsPerPage);
+                    break;
+                } else {
+                    ConsoleFormatter.printErrorMessage("❌ Must be a positive number!");
+                }
+            } catch (NumberFormatException e) {
+                ConsoleFormatter.printErrorMessage("⚠️ Invalid input! Please enter a valid number.");
+            }
+        }
+    }
+
     public boolean handlePagination() {
         while (true) {
             printPaginationInfo();
             String choice = getUserChoice();
+            int totalPages = getTotalPages();
+
             switch (choice) {
                 case "n":
                     if (currentPage < totalPages) {
@@ -50,6 +81,9 @@ public class PaginationFormatter {
                         ConsoleFormatter.printErrorMessage("❌ Already on the first page.");
                     }
                     break;
+                case "c":
+                    changeItemsPerPage();
+                    break;
                 case "e":
                     ConsoleFormatter.printSuccessMessage("🚪 Exiting menu view.");
                     return false;
@@ -61,5 +95,31 @@ public class PaginationFormatter {
 
     public int getCurrentPage() {
         return currentPage;
+    }
+
+    public int getItemsPerPage() {
+        return itemsPerPage;
+    }
+
+    public void nextPage() {
+        currentPage++;
+    }
+
+    public void previousPage() {
+        currentPage--;
+    }
+
+    public void setItemsPerPage(int itemsPerPage) {
+        this.itemsPerPage = itemsPerPage;
+        currentPage = 1;
+    }
+
+    public void reset() {
+        currentPage = 1;
+        itemsPerPage = 10;
+    }
+
+    public void updateTotalPages(int totalPages, int itemsPerPage) {
+        this.totalItems = totalPages * itemsPerPage;
     }
 }

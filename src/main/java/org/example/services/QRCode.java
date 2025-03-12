@@ -30,21 +30,22 @@ public class QRCode {
 
     private JFrame frame;
     private JLabel statusLabel;
-    public static void QRCodePayment() {
+
+    public static void QRCodePayment(double grandTotal) {
         try {
-            new QRCode().generateAndDisplayQRCode();
+            new QRCode().generateAndDisplayQRCode(grandTotal);
         } catch (WriterException e) {
             System.out.println("\t❌ Error: Failed to generate QR Code: " + e.getMessage());
         }
     }
 
-    public void generateAndDisplayQRCode() throws WriterException {
+    public void generateAndDisplayQRCode(double grandTotal) throws WriterException {
         IndividualInfo individualInfo = new IndividualInfo();
         individualInfo.setAccountInformation("010513288");
         individualInfo.setBakongAccountId("dina_pisethi31@aclb");
         individualInfo.setAcquiringBank("ABA");
         individualInfo.setCurrency(KHQRCurrency.USD);
-        individualInfo.setAmount(1.0);
+        individualInfo.setAmount(grandTotal);  // ✅ Fix: Use passed grandTotal
         individualInfo.setMerchantName("ROS Cambodia");
         individualInfo.setMerchantCity("Phnom Penh");
 
@@ -63,7 +64,6 @@ public class QRCode {
             displayQRPopup(qrImage, md5);
         } else {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: " + response.getKHQRStatus().getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
-
         }
     }
 
@@ -119,7 +119,6 @@ public class QRCode {
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
-
 
     private void waitForPayment(String md5) {
         int attempts = 0;
@@ -215,14 +214,13 @@ public class QRCode {
         }
 
         public void setMd5(String md5) {
-
             this.md5 = md5;
         }
     }
 
     // test QR
     public static void main(String[] args) {
-        QRCodePayment();
+        double grandTotal = 100.0; // Example grand total
+        QRCodePayment(grandTotal);
     }
-
 }

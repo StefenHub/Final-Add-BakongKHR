@@ -48,7 +48,7 @@ public class StaffController {
             String[] options = {
                     "1.  View All Orders",
                     "2.  Place Order",
-                    "0.  Exit"
+                    "3.  Exit"
             };
 
             for (String option : options) {
@@ -61,7 +61,11 @@ public class StaffController {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-            int choice = validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);
+            int choice = validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);
+            if (choice == -1) {
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Going back to the previous menu...", ColorFormatter.RED + ColorFormatter.BOLD)));
+                return;
+            }
             switch (choice) {
                 case 1:
                     OrderManager.viewAllCustomerOrders();
@@ -70,8 +74,7 @@ public class StaffController {
                     CustomerController customerController = new CustomerController(scanner, orderService);
                     customerController.start();
                     break;
-                case 0:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Exiting staffController menu...", ColorFormatter.RED + ColorFormatter.BOLD)));
+                case 3:
                     return;
                 default:
                     System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));

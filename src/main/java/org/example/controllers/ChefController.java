@@ -1,9 +1,6 @@
 package org.example.controllers;
 
-import org.example.utils.ColorFormatter;
-import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
-import org.example.utils.InputValidator;
+import org.example.utils.*;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -13,17 +10,16 @@ import java.sql.*;
 import java.util.Scanner;
 
 public class ChefController {
-    private static final int ITEMS_PER_PAGE = 10; // Number of items per page
     private final Scanner scanner;
     private static final String RESET = "\u001B[0m";
     private static final String BOLD_BLUE = "\033[1;34m"; // Blue title
-    private static final String BRIGHT_WHITE = "\033[97m"; // White text for options
     private static final String WHITE_BORDER = "\033[97m"; // White border
     private static final String BLUE = "\u001B[34m"; // Blue for padding
 
     private static final int consoleWidth = 180; // Console width
     private static final int tableWidth = 100; // Wider table width
     private static final String padding = " ".repeat((consoleWidth - tableWidth) / 2);
+    private PaginationFormatter pagination;
 
     public ChefController(Scanner scanner) {
         this.scanner = scanner;
@@ -86,28 +82,22 @@ public class ChefController {
 
     // View all orders
     private void viewAllOrders() {
-        int currentPage = 1;
-        int totalPages = getTotalPages("SELECT COUNT(*) FROM order_items");
+        int totalItems = getTotalItems("SELECT COUNT(*) FROM order_items");
+        pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?", currentPage);
+            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + currentPage + " of " + totalPages, ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[➡️] Next  |  [⬅️] Previous  |  [❌] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             String choice = scanner.next().toLowerCase();
             if (choice.equals("n")) {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ You are already on the last page.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                }
+                pagination.nextPage();
             } else if (choice.equals("p")) {
-                if (currentPage > 1) {
-                    currentPage--;
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ You are already on the first page.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                }
+                pagination.previousPage();
+            } else if (choice.equals("c")) {
+                changeItemsPerPage();
             } else if (choice.equals("e")) {
                 break;
             } else {
@@ -118,28 +108,22 @@ public class ChefController {
 
     // View pending orders
     private void viewPendingOrders() {
-        int currentPage = 1;
-        int totalPages = getTotalPages("SELECT COUNT(*) FROM order_items WHERE order_status = 'pending'");
+        int totalItems = getTotalItems("SELECT COUNT(*) FROM order_items WHERE order_status = 'pending'");
+        pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", currentPage);
+            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + currentPage + " of " + totalPages, ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[➡️] Next  |  [⬅️] Previous  |  [❌] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             String choice = scanner.next().toLowerCase();
             if (choice.equals("n")) {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ You are already on the last page.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                }
+                pagination.nextPage();
             } else if (choice.equals("p")) {
-                if (currentPage > 1) {
-                    currentPage--;
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ You are already on the first page.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                }
+                pagination.previousPage();
+            } else if (choice.equals("c")) {
+                changeItemsPerPage();
             } else if (choice.equals("e")) {
                 break;
             } else {
@@ -150,12 +134,12 @@ public class ChefController {
 
     // Display orders with pagination
     private void displayOrders(String query, int page) {
-        int offset = (page - 1) * ITEMS_PER_PAGE;
+        int offset = (page - 1) * pagination.getItemsPerPage();
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, ITEMS_PER_PAGE);
+            stmt.setInt(1, pagination.getItemsPerPage());
             stmt.setInt(2, offset);
             ResultSet rs = stmt.executeQuery();
 
@@ -186,22 +170,33 @@ public class ChefController {
         }
     }
 
-    // Get total pages for pagination
-    private int getTotalPages(String countQuery) {
+    // Get total items for pagination
+    private int getTotalItems(String countQuery) {
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(countQuery)) {
 
             if (rs.next()) {
-                int totalItems = rs.getInt(1);
-                return (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
+                return rs.getInt(1);
             }
 
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving total pages: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving total items: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
         }
-        return 1;
+        return 0;
+    }
+
+    // Change items per page
+    private void changeItemsPerPage() {
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the number of items per page: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        int itemsPerPage = InputValidator.validateIntegerInput(scanner, "", 1, Integer.MAX_VALUE);
+        if (itemsPerPage > 0) {
+            pagination.setItemsPerPage(itemsPerPage);
+            pagination.reset();
+        } else {
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Invalid input! Try again.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+        }
     }
 
     // Update order status

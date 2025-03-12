@@ -51,10 +51,10 @@ public class DisplayUI {
                     break;
                 case 4:
                     if (AuthUtils.authenticateUser(scanner, ADMIN_PASSWORD, "Admin")) {
-                        new AdminController().adminPanel();
+                        new AdminController().adminPanel(scanner);
                     }
                     break;
-                case 0:
+                case 5:
                     ConsoleFormatter.printSuccessMessage("✅ Exiting... Thank you for using our system!");
                     scanner.close();
                     return;

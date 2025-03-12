@@ -8,21 +8,23 @@ public class Utils {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
 
+            // Check if the user wants to go back
             if (input.equalsIgnoreCase("b")) {
-                return -1;
+                return -1;  // Special return value to indicate "go back"
             }
 
             try {
                 int value = Integer.parseInt(input);
-                if (value < min || value > max) {
-                    System.out.println("\tInput out of range. Please enter a number between " + min + " and " + max + ".");
-                } else {
+                if (value >= min && value <= max) {
                     return value;
+                } else {
+                    System.out.println(ColorFormatter.colorText("⚠ Invalid input! Please enter a number between " + min + " and " + max + ".", ColorFormatter.YELLOW + ColorFormatter.BOLD));
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\tInvalid input. Please enter a valid numeric value.");
+                System.out.println(ColorFormatter.colorText("⚠ Invalid input! Please enter a valid number or [b] to go back.", ColorFormatter.YELLOW + ColorFormatter.BOLD));
             }
         }
     }
+
 
 }

@@ -8,50 +8,62 @@ import org.nocrala.tools.texttablefmt.*;
 import java.sql.*;
 
 public class AdminMenuViewer {
-    private static final int ITEMS_PER_PAGE = 10;
+    private static final String RESET = "\u001B[0m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String RED = "\u001B[31m";
 
     public static void viewMenuItemsAdmin() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            int totalPages = getTotalPages(conn);
-            if (totalPages == 0) {
-                System.out.println("\n" + ConsoleFormatter.centerText("📭 No menu items available."));
+            int totalItems = getTotalItemCount(conn);
+            if (totalItems == 0) {
+                System.out.println(RED + "📭 No menu items available." + RESET);
                 return;
             }
 
-            PaginationFormatter paginator = new PaginationFormatter(totalPages);
+            PaginationFormatter paginator = new PaginationFormatter(totalItems, 5); // Default items per page = 5
 
             while (true) {
-                displayMenuItems(conn, paginator.getCurrentPage());
+                displayMenuItems(conn, paginator.getCurrentPage(), paginator.getItemsPerPage());
 
-                if (!paginator.handlePagination()) {
-                    break; // Exit loop when user selects 'E'
-                }
+                boolean shouldContinue = paginator.handlePagination();
+                if (!shouldContinue) break; // Exit if user chooses to quit
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText("⚠️ Database connection error: " + e.getMessage()));
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
-    private static void displayMenuItems(Connection conn, int page) {
-        int offset = (page - 1) * ITEMS_PER_PAGE;
-        String sql = "SELECT * FROM menuitemsadmin ORDER BY category, name LIMIT ? OFFSET ?";
+    private static int getTotalItemCount(Connection conn) throws SQLException {
+        String countSql = "SELECT COUNT(*) FROM menuitemsadmin";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(countSql)) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
+    }
+
+    private static void displayMenuItems(Connection conn, int page, int itemsPerPage) {
+        int offset = (page - 1) * itemsPerPage;
+        String sql = "SELECT mi.item_id, mi.name, mi.description, c.name AS category_name, mi.size, mi.base_price, mi.sell_price, mi.discount " +
+                "FROM menuitemsadmin mi " +
+                "JOIN categories c ON mi.category_id = c.id " +
+                "ORDER BY c.name, mi.name LIMIT ? OFFSET ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, ITEMS_PER_PAGE);
+            stmt.setInt(1, itemsPerPage);
             stmt.setInt(2, offset);
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                System.out.println("\n" + ConsoleFormatter.centerText("🚫 No items found."));
+                System.out.println(ConsoleFormatter.centerText(RED + "🚫 No items found." + RESET));
                 return;
             }
 
             String currentCategory = "";
             Table table = null;
-            int count = 1;
+            int count = offset + 1; // Start numbering from the correct offset
 
             while (rs.next()) {
-                String category = rs.getString("category");
+                String category = rs.getString("category_name");
                 if (!category.equals(currentCategory)) {
                     if (table != null) {
                         ConsoleFormatter.printCenteredTable(table.render());
@@ -59,53 +71,39 @@ public class AdminMenuViewer {
                     currentCategory = category;
                     ConsoleFormatter.printCategoryHeader(currentCategory);
                     table = createTable();
-                    count = 1;
                 }
 
-                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER)); // Continuous numbering
                 table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(trimDescription(rs.getString("description")), new CellStyle(CellStyle.HorizontalAlign.LEFT));
                 table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(String.format("$%.2f", rs.getDouble("base_price")), new CellStyle(CellStyle.HorizontalAlign.RIGHT));
                 table.addCell(String.format("$%.2f", rs.getDouble("sell_price")), new CellStyle(CellStyle.HorizontalAlign.RIGHT));
                 table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.RIGHT));
             }
 
-            if (table != null) {
-                ConsoleFormatter.printCenteredTable(table.render());
-            }
+            ConsoleFormatter.printCenteredTable(table.render());
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText("⚠️ Error retrieving menu items: " + e.getMessage()));
+            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Error retrieving menu items: " + e.getMessage() + RESET));
         }
     }
 
+
     private static Table createTable() {
-        Table table = new Table(6, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
-        CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
-
-        table.addCell(" No. ", centerStyle);
-        table.addCell(" Name ", centerStyle);
-        table.addCell(" Description ", centerStyle);
-        table.addCell(" Size ", centerStyle);
-        table.addCell(" Sell Price ", centerStyle);
-        table.addCell(" Discount ", centerStyle);
-
+        Table table = new Table(7, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+        table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Base Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Sell Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell("Discount", new CellStyle(CellStyle.HorizontalAlign.CENTER));
         return table;
     }
 
     private static String trimDescription(String description) {
-        return (description.length() > 50) ? description.substring(0, 47) + "..." : description;
-    }
-
-    private static int getTotalPages(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM menuitemsadmin";
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                int totalItems = rs.getInt(1);
-                return (totalItems == 0) ? 0 : (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
-            }
-        }
-        return 1;
+        int maxLength = 30;
+        return description.length() > maxLength ? description.substring(0, maxLength - 3) + "..." : description;
     }
 
     public static void main(String[] args) {

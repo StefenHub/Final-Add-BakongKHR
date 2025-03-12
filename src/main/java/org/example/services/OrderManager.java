@@ -1,124 +1,63 @@
 package org.example.services;
 
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Scanner;
-
-import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.example.utils.DatabaseConnection;
-import org.nocrala.tools.texttablefmt.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class OrderManager {
-    private static final int PAGE_SIZE = 10; // Number of orders per page
 
     public static void viewAllCustomerOrders() {
-        Scanner scanner = new Scanner(System.in);
-        int currentPage = 1;
-        int totalPages = getTotalPages();
-
-        while (true) {
-            displayOrders(currentPage);
-
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Page " + currentPage + " of " + totalPages, ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Options: [➡️ N] Next | [⬅️ P] Previous | [❌ Q] Quit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-
-            while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-                String choice = scanner.nextLine().trim().toLowerCase();
-
-                if (choice.equals("n")) {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        break;
-                    } else {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ You are already on the last page.", ColorFormatter.RED + ColorFormatter.BOLD)));
-                    }
-                } else if (choice.equals("p")) {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        break;
-                    } else {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ You are already on the first page.", ColorFormatter.RED + ColorFormatter.BOLD)));
-                    }
-                } else if (choice.equals("q")) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Exiting pagination view.", ColorFormatter.RED + ColorFormatter.BOLD)));
-                    return;
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter [➡️ N], [⬅️ P], or [❌ Q].", ColorFormatter.RED + ColorFormatter.BOLD)));
-                }
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            int orderId = 1; // Example order_id, replace with actual value
+            if (isOrderIdValid(conn, orderId)) {
+                displayOrders(conn, orderId);
+            } else {
+                ConsoleFormatter.printErrorMessage("❌ Invalid order ID: " + orderId);
             }
-        }
-    }
-
-    private static void displayOrders(int page) {
-        int offset = (page - 1) * PAGE_SIZE;
-        String query = "SELECT order_id, name, size, quantity, description, order_date FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?";
-        int consoleWidth = 100;
-        int tableWidth = 90;
-        int leftPadding = (consoleWidth - tableWidth) / 2;
-        String padding = " ".repeat(leftPadding);
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setInt(1, PAGE_SIZE);
-            pstmt.setInt(2, offset);
-            ResultSet rs = pstmt.executeQuery();
-
-            Table table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
-            table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Item Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
-            int count = offset + 1;
-            while (rs.next()) {
-                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("order_id"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("quantity"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(formatDate(rs.getTimestamp("order_date")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            }
-            String[] tableLines = table.render().split("\n");
-            for (String line : tableLines) {
-                System.out.println(padding + line);
-            }
-
         } catch (SQLException e) {
-            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving customer orders: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
-            e.printStackTrace();
+            ConsoleFormatter.printErrorMessage("❌ Error retrieving customer orders: " + e.getMessage());
         }
     }
 
-    private static int getTotalPages() {
-        String query = "SELECT COUNT(*) AS total FROM order_items";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
+    private static boolean isOrderIdValid(Connection conn, int orderId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM orders WHERE order_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                int totalOrders = rs.getInt("total");
-                return (int) Math.ceil((double) totalOrders / PAGE_SIZE);
+                return rs.getInt(1) > 0;
             }
-        } catch (SQLException e) {
-            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error fetching order count: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
-        return 1;
+        return false;
     }
 
-    private static String formatDate(Timestamp timestamp) {
-        if (timestamp == null) return "N/A";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return sdf.format(timestamp);
+    private static void displayOrders(Connection conn, int orderId) throws SQLException {
+        String sql = "SELECT oi.order_item_id, o.order_id, oi.description, oi.quantity, oi.sell_price " +
+                "FROM order_items oi " +
+                "JOIN orders o ON oi.order_id = o.order_id " +
+                "WHERE o.order_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int orderItemId = rs.getInt("order_item_id");
+                String description = rs.getString("description");
+                int quantity = rs.getInt("quantity");
+                double price = rs.getDouble("sell_price");
+
+                System.out.printf("Order Item ID: %d, Order ID: %d, Description: %s, Quantity: %d, Price: %.2f%n",
+                        orderItemId, orderId, description, quantity, price);
+            }
+        }
     }
 
-    // test orderManager
+    // test displayOrders method
     public static void main(String[] args) {
         viewAllCustomerOrders();
     }

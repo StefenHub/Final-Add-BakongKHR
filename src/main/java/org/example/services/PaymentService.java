@@ -14,10 +14,11 @@ public class PaymentService {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
     }
 
-    public void processPaymentCustomer() {
+    public boolean processPaymentCustomer() {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Processing payment through KHQR...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         QRCodePayment();
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        return false;
     }
 
     public void QRCodePayment() {
