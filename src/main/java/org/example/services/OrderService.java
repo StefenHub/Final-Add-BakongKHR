@@ -250,14 +250,13 @@ public class OrderService {
             double grandTotal = calculateTotalAmount();  // ✅ Get total order amount
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
 
-            // ✅ Pass grandTotal to QR Code Payment
-            QRCode.QRCodePayment(grandTotal);
-
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             Thread.sleep(2000);
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment confirmed via QR Code.", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment confirmed via QR Code.", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
+            // ✅ Pass grandTotal to QR Code Payment
+            QRCode.QRCodePayment(grandTotal);
             clearCart();  // ✅ Clear the cart after successful payment
             return true;
         } catch (Exception e) {
@@ -308,7 +307,7 @@ public class OrderService {
         Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now()); // Better alternative to ZoneId
 
         String orderQuery = "INSERT INTO orders (payment_method, total_price, order_date) VALUES (?, ?, ?)";
-        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size,quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false); // Start transaction
@@ -343,6 +342,7 @@ public class OrderService {
                             orderItemStmt.setInt(1, orderId);
                             orderItemStmt.setInt(2, itemId);
                             orderItemStmt.setString(3, (String) item.get("name"));
+                            orderItemStmt.setString(4, (String) item.get("size"));
                             orderItemStmt.setString(4, (String) item.get("description"));
                             orderItemStmt.setInt(5, quantity);
                             orderItemStmt.setDouble(6, sellPrice);

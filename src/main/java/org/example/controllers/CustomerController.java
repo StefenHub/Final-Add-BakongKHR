@@ -278,8 +278,8 @@ public class CustomerController {
         displayMessage("🔄 Processing payment for Order ID: " + orderId, ColorFormatter.YELLOW);
 
         if (orderService.processPayment(orderId, paymentMethod)) {
-            orderService.generateReceipt(orderId, paymentMethod);
             displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
+            orderService.generateReceipt(orderId, paymentMethod);
         } else {
             displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
         }

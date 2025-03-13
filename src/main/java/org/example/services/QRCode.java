@@ -112,6 +112,7 @@ public class QRCode {
 
         frame.pack();
         frame.setLocationRelativeTo(null);
+        frame.setAlwaysOnTop(true);
         frame.setVisible(true);
 
         // Start payment check in a separate thread
