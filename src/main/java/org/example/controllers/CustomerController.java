@@ -25,6 +25,7 @@ public class CustomerController {
     int tableWidth = 100; // Wider table width
     int leftPadding = (consoleWidth - tableWidth) / 2;
     String padding = " ".repeat(leftPadding);
+    private boolean paymentSuccessful;
 
     public CustomerController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
@@ -115,7 +116,7 @@ public class CustomerController {
             int selectedCategoryId = (int) selectedCategory.get("id"); // ✅ Get category ID
             String selectedCategoryName = (String) selectedCategory.get("name"); // ✅ Get category name
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\n📂 Displaying items for category: " + selectedCategoryName, ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📂 Displaying items for category: " + selectedCategoryName, ColorFormatter.BLUE + ColorFormatter.BOLD)));
             orderService.displayItemsByCategory(String.valueOf(selectedCategoryId), scanner); // ✅ Pass category ID as String
 
             // Prompt user to enter item ID
@@ -232,42 +233,66 @@ public class CustomerController {
     }
 
     private void confirmAndPay() {
-        // Check if cart is empty before proceeding
-        if (orderService.isCartEmpty()) {
-            System.out.println(formatText("❌ Your cart is empty. Add items before proceeding to payment.", ColorFormatter.RED + ColorFormatter.BOLD));
-            return;
-        }
+        if (!validateCart()) return;  // Check if the cart is empty
 
         orderService.viewCart();
 
         if (!confirmOrder()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Order canceled.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
         }
 
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\n💳 --- Payment Process ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
+        displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
 
         int paymentMethod = 1; // QR Code is the only option
+        int orderId = placeOrder(paymentMethod);
+
+        if (orderId == -1) return; // Order placement failed, handled in placeOrder()
+
+        processPayment(orderId, paymentMethod);
+    }
+
+    private boolean validateCart() {
+        if (orderService.isCartEmpty()) {
+            displayMessage("❌ Your cart is empty. Add items before proceeding to payment.", ColorFormatter.RED);
+            return false;
+        }
+        return true;
+    }
+
+    // Places the order and returns the order ID
+    private int placeOrder(int paymentMethod) {
+        System.out.println("🛒 Placing Order...");
         int orderId = orderService.placeOrder(paymentMethod);
 
         if (orderId == -1) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to place order. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
-            return;
-        }
-
-        // Process payment
-        boolean paymentSuccessful = paymentService.processPaymentCustomer();
-
-        // Ensure receipt is generated only if payment is successful
-        if (paymentSuccessful && orderService.processPayment(orderId, paymentMethod)) {
-            orderService.generateReceipt(orderId, paymentMethod);
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
         } else {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Payment failed. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println("✅ Order placed successfully! Order ID: " + orderId);
+        }
+        return orderId;
+    }
+
+    // Handles the payment process
+    private void processPayment(int orderId, int paymentMethod) {
+        displayMessage("🔄 Processing payment for Order ID: " + orderId, ColorFormatter.YELLOW);
+
+        if (orderService.processPayment(orderId, paymentMethod)) {
+            orderService.generateReceipt(orderId, paymentMethod);
+            displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
+        } else {
+            displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
         }
     }
 
-    // ✅ Added cart confirmation before placing the order
+    // Utility method to display formatted messages
+    private void displayMessage(String message, String color) {
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
+    }
+
+
+
+    // Added cart confirmation before placing the order
     private boolean confirmOrder() {
         System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         return scanner.nextLine().trim().equalsIgnoreCase("y");

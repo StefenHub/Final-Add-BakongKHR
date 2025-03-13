@@ -63,7 +63,6 @@ public class CategoryManager {
         Table table = new Table(2, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
         table.addCell(ColorFormatter.colorText("ID", ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
         table.addCell(ColorFormatter.colorText("Category Name", ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
         for (Map<String, Object> category : categories) {
             table.addCell(ColorFormatter.colorText(String.valueOf(category.get("id")), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell(ColorFormatter.colorText((String) category.get("name"), ColorFormatter.BLUE + ColorFormatter.BOLD), new CellStyle(CellStyle.HorizontalAlign.CENTER));

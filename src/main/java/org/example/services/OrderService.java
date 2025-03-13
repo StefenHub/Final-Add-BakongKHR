@@ -3,6 +3,7 @@ package org.example.services;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.example.utils.DatabaseConnection;
+import org.example.utils.PaginationFormatter;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -10,7 +11,6 @@ import org.nocrala.tools.texttablefmt.Table;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 public class OrderService {
@@ -56,27 +56,16 @@ public class OrderService {
         }
 
         int itemsPerPage = 5;
-        int totalPages = (int) Math.ceil((double) items.size() / itemsPerPage);
-        int currentPage = 1;
+        PaginationFormatter paginator = new PaginationFormatter(items.size(), itemsPerPage);
 
-        while (true) {
-            displayPage(items, currentPage, itemsPerPage, totalPages);
-
-            // this should call pagination formatter
-
-
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter 'n' for next page, 'p' for previous, 'q' to quit: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            String input = scanner.nextLine().trim().toLowerCase();
-
-            if (input.equals("n") && currentPage < totalPages) {
-                currentPage++;
-            } else if (input.equals("p") && currentPage > 1) {
-                currentPage--;
-            } else if (input.equals("q")) {
-                break;
-            } else {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            while (true) {
+                displayPage(items, paginator.getCurrentPage(), paginator.getItemsPerPage(), paginator.getTotalPages());
+                boolean shouldContinue = paginator.handlePagination();
+                if (!shouldContinue) break; // Exit the loop if the user chooses to exit
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -199,8 +188,6 @@ public class OrderService {
         Map<String, Object> cartItem = new HashMap<>(item);
         cartItem.put("quantity", quantity);
         cart.add(cartItem);
-
-        //System.out.println("\t✅ Item added to cart: " + cartItem);
     }
 
     public void viewCart() {
@@ -211,14 +198,17 @@ public class OrderService {
 
         double grandTotal = 0;
 
-        // Print Receipt Header
-        System.out.println("\n\t📜 RECEIPT ");
-        System.out.println("\t═════════════════════════════════════════════════════");
+        Timestamp order_date = Timestamp.valueOf(LocalDateTime.now()); // Example order date, replace with actual value
+        System.out.println("📜 RECEIPT ");
+        String order_id = "ORD" + order_date.getTime();
+        System.out.println("Order ID: " + order_id);
+        System.out.println("Order Date: " + order_date);
+        System.out.println("-------------------------------------------------------------");
 
         // Table Header
         System.out.printf("\t%-5s %-20s %6s %10s %10s%n",
                 "ID", "Description", "Qty", "Disc ($)", "Total ($)");
-        System.out.println("\t─────────────────────────────────────────────────────");
+        System.out.println("-------------------------------------------------------------");
 
         for (Map<String, Object> cartItem : cart) {
             int itemId = (int) cartItem.get("item_id");
@@ -242,10 +232,10 @@ public class OrderService {
         }
 
         // Print Footer
-        System.out.println("\t─────────────────────────────────────────────────────");
-        System.out.printf("\t%-5s %-20s %6s %10s %10.2f%n", "", "", "", "Total ($)", grandTotal);
-        System.out.println("\t═════════════════════════════════════════════════════");
-        System.out.println("\n\t🎉 Thank you for shopping with us! 🎉\n");
+        System.out.println("─────────────────────────────────────────────────────");
+        System.out.printf("%-5s %-20s %6s %10s %10.2f%n", "", "", "", "Total ($)", grandTotal);
+        System.out.println("═════════════════════════════════════════════════════");
+        System.out.println("🎉 Thank you for shopping with us! 🎉");
     }
 
 
@@ -258,7 +248,10 @@ public class OrderService {
     public boolean processPayment(int orderId, int paymentMethod) {
         try {
             double grandTotal = calculateTotalAmount();  // ✅ Get total order amount
-            QRCode.QRCodePayment(grandTotal);  // ✅ Pass the grandTotal to QR Code
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+
+            // ✅ Pass grandTotal to QR Code Payment
+            QRCode.QRCodePayment(grandTotal);
 
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             Thread.sleep(2000);
@@ -273,6 +266,7 @@ public class OrderService {
             return false;
         }
     }
+
 
     private double calculateTotalAmount() {
         double totalAmount = 0;

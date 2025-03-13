@@ -75,7 +75,7 @@ public class CustomerMenuViewer {
                     table = createTable();
                 }
 
-                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER)); // Continuous numbering
+                table.addCell(String.valueOf(count++), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(trimDescription(rs.getString("description")), new CellStyle(CellStyle.HorizontalAlign.LEFT));
                 table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -91,7 +91,7 @@ public class CustomerMenuViewer {
 
 
     private static Table createTable() {
-        Table table = new Table(6, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+        Table table = new Table(6, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
         table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
         table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
         table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));

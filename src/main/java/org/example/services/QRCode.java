@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,20 +33,32 @@ public class QRCode {
     private JLabel statusLabel;
 
     public static void QRCodePayment(double grandTotal) {
-        try {
-            new QRCode().generateAndDisplayQRCode(grandTotal);
-        } catch (WriterException e) {
-            System.out.println("\t❌ Error: Failed to generate QR Code: " + e.getMessage());
+        boolean paymentSuccessful = false;
+        Scanner scanner = new Scanner(System.in);
+
+        while (!paymentSuccessful) {
+            try {
+                new QRCode().generateAndDisplayQRCode(grandTotal);
+                paymentSuccessful = true;
+            } catch (WriterException e) {
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: Failed to generate QR Code: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Do you want to retry? (yes/no): ", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                String retry = scanner.nextLine().trim().toLowerCase();
+                if (!retry.equals("yes")) {
+                    break;
+                }
+            }
         }
     }
+    private static String latestMd5 = null; // ✅ Store the latest MD5 hash
 
-    public void generateAndDisplayQRCode(double grandTotal) throws WriterException {
+    public String generateAndDisplayQRCode(double grandTotal) throws WriterException {
         IndividualInfo individualInfo = new IndividualInfo();
         individualInfo.setAccountInformation("010513288");
         individualInfo.setBakongAccountId("dina_pisethi31@aclb");
         individualInfo.setAcquiringBank("ABA");
         individualInfo.setCurrency(KHQRCurrency.USD);
-        individualInfo.setAmount(grandTotal);  // ✅ Fix: Use passed grandTotal
+        individualInfo.setAmount(grandTotal);
         individualInfo.setMerchantName("ROS Cambodia");
         individualInfo.setMerchantCity("Phnom Penh");
 
@@ -53,17 +66,19 @@ public class QRCode {
 
         if (response.getKHQRStatus().getCode() == 0) {
             String qrText = response.getData().getQr();
-            String md5 = response.getData().getMd5();
+            latestMd5 = response.getData().getMd5(); // ✅ Store MD5 when QR is generated
 
             if (qrText == null || qrText.isEmpty()) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Error: QR Code Data is empty!", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                return;
+                System.out.println("⚠️ Error: QR Code Data is empty!");
+                return null;
             }
 
             BufferedImage qrImage = generateQRImage(qrText, 300, 300);
-            displayQRPopup(qrImage, md5);
+            displayQRPopup(qrImage, latestMd5);
+            return latestMd5; // ✅ Return the MD5 for immediate use
         } else {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: " + response.getKHQRStatus().getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println("❌ Error: " + response.getKHQRStatus().getMessage());
+            return null;
         }
     }
 
@@ -103,7 +118,7 @@ public class QRCode {
         new Thread(() -> waitForPayment(md5)).start();
 
         // Start Countdown Timer
-        new Thread(() -> startCountdown(60)).start();
+        new Thread(() -> startCountdown(60)).start(); // 60 seconds
     }
 
     private void startCountdown(int initialTime) {
@@ -121,85 +136,94 @@ public class QRCode {
     }
 
     private void waitForPayment(String md5) {
-        int attempts = 0;
-        int waitTime = 5000; // Start with 500ms
-        int maxAttempts = 35 * 1000 / waitTime; //
+        int waitTime = 200; // Initial wait time 200ms
+        long startTime = System.currentTimeMillis();
+        long timeout = 60 * 1000; // 60 seconds
 
-        while (attempts < maxAttempts) {
+        while (System.currentTimeMillis() - startTime < timeout) {
             try {
                 Thread.sleep(waitTime);
 
                 if (validateMd5(md5)) {
                     SwingUtilities.invokeLater(() -> {
                         statusLabel.setText("\t✅ Payment Successful!");
-                        JOptionPane.showMessageDialog(frame, "\tPayment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         frame.dispose();
                     });
                     return;
                 }
 
-                waitTime = Math.min(waitTime * 1, 5000); // Max wait time = 5s
+                waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
 
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                return;
             }
-            attempts++;
         }
 
+        // Timeout case
         SwingUtilities.invokeLater(() -> {
-            statusLabel.setText("\t❌ Payment Timed Out");
-            JOptionPane.showMessageDialog(frame, "\tPayment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+            statusLabel.setText("❌ Payment Timed Out");
+            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
             frame.dispose();
         });
     }
 
-    private boolean validateMd5(String md5) {
-        try {
-            HttpClient httpClient = HttpClient.newHttpClient();
-            ObjectMapper objectMapper = new ObjectMapper();
-            String requestBody = objectMapper.writeValueAsString(new Md5Request(md5));
 
-            int maxAttempts = 1;
-            int attempt = 0;
-            int interval = 3; // seconds
+    boolean validateMd5(String md5) {
+    try {
+        HttpClient httpClient = HttpClient.newHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(new Md5Request(md5));
 
-            while (attempt < maxAttempts) {
-                HttpRequest httpRequest = HttpRequest.newBuilder()
-                        .uri(URI.create(API_URL))
-                        .header("Authorization", AUTH_TOKEN)
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                        .build();
+        int maxAttempts = 5; // ✅ Increase retry attempts
+        int attempt = 0;
+        int interval = 2; // ✅ Reduce interval to 2 seconds
 
-                HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        while (attempt < maxAttempts) {
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(API_URL))
+                    .header("Authorization", AUTH_TOKEN)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
 
-                if (response.statusCode() == 200) {
-                    JsonNode jsonResponse = objectMapper.readTree(response.body());
-                    int responseCode = jsonResponse.path("responseCode").asInt();
-                    String responseMessage = jsonResponse.path("responseMessage").asText();
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-                    if (responseCode == 0) {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            if (response.statusCode() == 200) {
+                JsonNode jsonResponse = objectMapper.readTree(response.body());
+                int responseCode = jsonResponse.path("responseCode").asInt();
+                String responseMessage = jsonResponse.path("responseMessage").asText();
 
-//                        System.out.println("\t🔹 Data: " + jsonResponse.path("data").toPrettyString());
-                        return true;
-                    } else {
-//                        System.out.println("\t⚠️ Retry " + (attempt + 1) + "/" + maxAttempts + " - " + responseMessage);
-                    }
-                } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ API Error: " + response.statusCode() + " - " + response.body(), ColorFormatter.RED + ColorFormatter.BOLD)));
+                if (responseCode == 0) {
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+                            "✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    return true; // ✅ Payment verified
                 }
-
-                attempt++;
-                TimeUnit.SECONDS.sleep(interval);
+            } else {
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+                        "❌ API Error: " + response.statusCode() + " - " + response.body(),
+                        ColorFormatter.RED + ColorFormatter.BOLD)));
             }
 
-//            System.out.println("\t⏳ Transaction validation failed after multiple attempts.");
-        } catch (Exception e) {
-            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Exception: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            attempt++;
+            TimeUnit.SECONDS.sleep(interval); // ✅ Wait before retrying
         }
 
-        return false;
+//        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+//                "⏳ Transaction validation failed after multiple attempts.",
+//                ColorFormatter.RED + ColorFormatter.BOLD)));
+    } catch (Exception e) {
+        System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+                "Exception: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+    }
+
+    return false;
+}
+
+    public static String getLatestMd5() {
+        // ✅ Implement a method to check if MD5 is available
+        return latestMd5;
     }
 
     private static class Md5Request {

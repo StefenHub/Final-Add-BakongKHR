@@ -5,7 +5,6 @@ import org.example.services.*;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.example.utils.Utils;
-import org.example.views.DisplayUI;
 import org.example.views.menuViewer.AdminMenuViewer;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -104,11 +103,9 @@ public class AdminController {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-//            int option = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 6);
-//            if (option == -1) continue;
             int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 6);
             if (choice == -1) {
-                return;  // This will exit the current menu and go back
+                return;
             }
 
             switch (choice) {
@@ -135,7 +132,6 @@ public class AdminController {
         }
     }
 
-    // Main method to start the Admin Panel
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
             new AdminController().adminPanel(scanner);

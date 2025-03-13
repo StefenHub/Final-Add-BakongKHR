@@ -31,27 +31,27 @@ public class StaffManager {
     static String padding = " ".repeat(leftPadding);
 
     public static void addStaff(Scanner scanner) {
-        String full_name;
+        String fullName;
         do {
-            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter full name: " + RESET));
-            full_name = scanner.nextLine().trim();
-            if (!NAME_PATTERN.matcher(full_name).matches()) {
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter full name: " + RESET));
+            fullName = scanner.nextLine().trim();
+            if (!NAME_PATTERN.matcher(fullName).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid full name! Only letters and spaces are allowed." + RESET));
             }
-        } while (!NAME_PATTERN.matcher(full_name).matches());
+        } while (!NAME_PATTERN.matcher(fullName).matches());
 
-        String userName;
+        String username;
         do {
-            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter username: " + RESET));
-            userName = scanner.nextLine().trim();
-            if (!USERNAME_PATTERN.matcher(userName).matches()) {
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter username: " + RESET));
+            username = scanner.nextLine().trim();
+            if (!USERNAME_PATTERN.matcher(username).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid username! Must be lowercase letters and numbers only." + RESET));
             }
-        } while (!USERNAME_PATTERN.matcher(userName).matches());
+        } while (!USERNAME_PATTERN.matcher(username).matches());
 
         String password;
         do {
-            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter password: " + RESET));
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter password: " + RESET));
             password = scanner.nextLine().trim();
             if (!PASSWORD_PATTERN.matcher(password).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid password! Must be at least 8 characters, contain uppercase, lowercase, number, and special character." + RESET));
@@ -60,46 +60,47 @@ public class StaffManager {
 
         String email;
         do {
-            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter email: " + RESET));
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter email: " + RESET));
             email = scanner.nextLine().trim();
             if (!EMAIL_PATTERN.matcher(email).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid email! Must start with a letter and end with @gmail.com." + RESET));
             }
         } while (!EMAIL_PATTERN.matcher(email).matches());
 
-        String phone_number;
+        String phoneNumber;
         do {
-            System.out.println(ConsoleFormatter.centerText(GREEN + "Enter phone number: " + RESET));
-            phone_number = scanner.nextLine().trim();
-            if (!PHONE_PATTERN.matcher(phone_number).matches()) {
+            System.out.print(ConsoleFormatter.centerText(GREEN + "Enter phone number: " + RESET));
+            phoneNumber = scanner.nextLine().trim();
+            if (!PHONE_PATTERN.matcher(phoneNumber).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits." + RESET));
             }
-        } while (!PHONE_PATTERN.matcher(phone_number).matches());
+        } while (!PHONE_PATTERN.matcher(phoneNumber).matches());
 
         String role;
         do {
             System.out.print(ConsoleFormatter.centerText(GREEN + "Enter role: " + RESET));
             role = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(role.toLowerCase())) {
-                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid role! Must be one of: staffController, admin, kitchen." + RESET));
+                System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid role! Must be one of: staff, admin, chef." + RESET));
             }
         } while (!VALID_ROLES.contains(role.toLowerCase()));
 
-        addStaff(UUID.randomUUID().toString(), full_name, userName, password, email, phone_number, role, Timestamp.valueOf(LocalDateTime.now()));
+        addStaff(UUID.randomUUID().toString(), fullName, username, password, email, phoneNumber, role, Timestamp.valueOf(LocalDateTime.now()));
     }
 
-    private static void addStaff(String string, String fullName, String userName, String password, String email, String phoneNumber, String role, Timestamp timestamp) {
-        String sql = "INSERT INTO users (uuid, full_name, userName, password, email, phone_number, role, date_time_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    private static void addStaff(String uuid, String fullName, String username, String password, String email, String phoneNumber, String role, Timestamp timestamp) {
+        String sql = "INSERT INTO users (uuid, full_name, username, password, email, phone_number, role, date_time_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setObject(1, UUID.fromString(string));
+            pstmt.setObject(1, UUID.fromString(uuid));
             pstmt.setString(2, fullName);
-            pstmt.setString(3, userName);
+            pstmt.setString(3, username);
             pstmt.setString(4, BCrypt.hashpw(password, BCrypt.gensalt()));
             pstmt.setString(5, email);
             pstmt.setString(6, phoneNumber);
             pstmt.setString(7, role);
             pstmt.setTimestamp(8, timestamp);
+            pstmt.executeUpdate(); // Ensure the data is saved to the database
             System.out.println(ConsoleFormatter.centerText(BOLD_BLUE + "✅ Staff added successfully!" + RESET));
         } catch (SQLException e) {
             System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
@@ -107,12 +108,12 @@ public class StaffManager {
     }
 
     public static void updateStaff(Scanner scanner) {
-        System.out.print(ConsoleFormatter.centerText("\tEnter staffController UUID: "));
+        System.out.print(ConsoleFormatter.centerText("Enter staffController UUID: "));
         UUID uuid = UUID.fromString(scanner.nextLine().trim());
 
         String newName;
         do {
-            System.out.print(ConsoleFormatter.centerText("\tEnter new full name: "));
+            System.out.print(ConsoleFormatter.centerText("Enter new full name: "));
             newName = scanner.nextLine().trim();
             if (!NAME_PATTERN.matcher(newName).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid full name! Only letters and spaces are allowed." + RESET));
@@ -121,7 +122,7 @@ public class StaffManager {
 
         String newPhone;
         do {
-            System.out.print(ConsoleFormatter.centerText("\tEnter new phone: "));
+            System.out.print(ConsoleFormatter.centerText("Enter new phone: "));
             newPhone = scanner.nextLine().trim();
             if (!PHONE_PATTERN.matcher(newPhone).matches()) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid phone number! Must start with 0 and be between 9 to 11 digits." + RESET));
@@ -130,7 +131,7 @@ public class StaffManager {
 
         String newRole;
         do {
-            System.out.print(ConsoleFormatter.centerText("\tEnter new role: "));
+            System.out.print(ConsoleFormatter.centerText("Enter new role: "));
             newRole = scanner.nextLine().trim();
             if (!VALID_ROLES.contains(newRole.toLowerCase())) {
                 System.out.println(ConsoleFormatter.centerText(RED + "❌ Invalid role! Must be one of: staffController, admin, kitchen." + RESET));
@@ -268,7 +269,7 @@ public class StaffManager {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_.-]*@gmail\\.com$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^0\\d{8,10}$");
-    private static final Set<String> VALID_ROLES = new HashSet<>(Arrays.asList("staffController", "admin", "kitchen"));
+    private static final Set<String> VALID_ROLES = new HashSet<>(Arrays.asList("staff", "admin", "chef"));
 
     // test StaffManager
     public static void main(String[] args) {
