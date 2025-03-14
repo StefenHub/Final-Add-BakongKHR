@@ -34,7 +34,6 @@ public class StaffController {
     public void start() {
         while (true) {
 
-            // Create a table with a SINGLE wide column
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
             table.setColumnWidth(0, 80, 90); // Explicitly setting column width wider
 
@@ -71,8 +70,10 @@ public class StaffController {
                     OrderManager.viewAllCustomerOrders();
                     break;
                 case 2:
-                    CustomerController customerController = new CustomerController(scanner, orderService);
-                    customerController.start();
+//                    CustomerController customerController = new CustomerController(scanner, orderService);
+//                    customerController.start();
+                      StaffService staffService = new StaffService(scanner , orderService);
+                        staffService.start();
                     break;
                 case 3:
                     return;

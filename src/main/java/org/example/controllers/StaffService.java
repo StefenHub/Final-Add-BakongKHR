@@ -1,10 +1,10 @@
 package org.example.controllers;
 
+import org.example.utils.ColorFormatter;
+import org.example.utils.ConsoleFormatter;
 import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
 import org.example.services.PaymentService;
-import org.example.utils.ColorFormatter;
-import org.example.utils.ConsoleFormatter;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -12,11 +12,11 @@ import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.*;
 
-public class CustomerController {
+public class StaffService {
 
-    private final Scanner scanner;
-    private final OrderService orderService;
-    private final PaymentService paymentService;
+    private Scanner scanner;
+    private OrderService orderService;
+    private PaymentService paymentService;
     final String RESET = "\u001B[0m";
     final String BOLD_BLUE = "\033[1;34m"; // Blue title
     final String WHITE_BORDER = "\033[97m"; // White border
@@ -27,10 +27,22 @@ public class CustomerController {
     String padding = " ".repeat(leftPadding);
     private boolean paymentSuccessful;
 
-    public CustomerController(Scanner scanner, OrderService orderService) {
+    public StaffService(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
         this.orderService = orderService;
         this.paymentService = new PaymentService();
+    }
+
+    public void StaffController(Scanner scanner, OrderService orderService) {
+        this.scanner = scanner;
+        this.orderService = orderService;
+        this.paymentService = new PaymentService();
+    }
+
+    public StaffService() {
+        this.scanner = scanner;
+        this.orderService = orderService;
+        this.paymentService = paymentService;
     }
 
     private String formatText(String text, String color) {
@@ -234,7 +246,6 @@ public class CustomerController {
         if (!validateCart()) return;
         orderService.viewCart();
 
-
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
@@ -242,14 +253,17 @@ public class CustomerController {
 
         displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
 
-        int paymentMethod = 1; // QR Code is the only option
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Select payment method:", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("1. QR Code", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("2. Cash", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+
+        int paymentMethod = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 2, false);
         int orderId = placeOrder(paymentMethod);
 
         if (orderId == -1) return;
 
         processPayment(orderId, paymentMethod);
     }
-
 
     private boolean validateCart() {
         if (orderService.isCartEmpty()) {
@@ -276,11 +290,16 @@ public class CustomerController {
     private void processPayment(int orderId, int paymentMethod) {
         displayMessage("🔄 Processing payment for Order ID: " + orderId, ColorFormatter.YELLOW);
 
-        if (orderService.processPayment(orderId, paymentMethod)) {
-            displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
+        if (paymentMethod == 1) { // QR Code
+            if (orderService.processPayment(orderId, paymentMethod)) {
+                displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
+                orderService.generateReceipt(orderId, paymentMethod);
+            } else {
+                displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
+            }
+        } else if (paymentMethod == 2) { // Cash
+            displayMessage("💵 Payment received in cash. Thank you for your order!", ColorFormatter.GREEN);
             orderService.generateReceipt(orderId, paymentMethod);
-        } else {
-            displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
         }
     }
 
@@ -288,7 +307,6 @@ public class CustomerController {
     private void displayMessage(String message, String color) {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
     }
-
 
     // Added cart confirmation before placing the order
     private boolean confirmOrder() {
@@ -319,19 +337,17 @@ public class CustomerController {
         }
     }
 
-    // test customer controller
+    // test staff controller
     public static void main(String[] args) {
         try {
             Scanner scanner = new Scanner(System.in);
             OrderService orderService = new OrderService();
-            CustomerController customerController = new CustomerController(scanner, orderService);
-            customerController.start();
+            StaffController staffController = new StaffController(scanner, orderService);
+            staffController.start();
         } catch (Exception e) {
             System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ An error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
             System.exit(1);
         }
-
     }
 }
-
