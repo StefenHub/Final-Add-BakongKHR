@@ -15,7 +15,7 @@ public class TableFormat {
         final String RESET = "\u001B[0m";
         final String BOLD_GREEN = "\033[1;92m";
 
-        Table table = new Table(1, BorderStyle.UNICODE_BOX_WIDE, ShownBorders.ALL);
+        Table table = new Table(1, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
         CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
 
         // Add Title (Centered)

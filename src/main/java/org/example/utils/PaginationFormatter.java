@@ -22,15 +22,14 @@ public class PaginationFormatter {
     public void printPaginationInfo() {
         int totalPages = getTotalPages();
         String pageInfo = ColorFormatter.colorText("📄 Page " + currentPage + " of " + totalPages, ColorFormatter.GREEN);
-        System.out.println(ConsoleFormatter.centerText("You are on pagination view!!"));
+        System.out.print(ColorFormatter.colorText("You're on Pagination View", ColorFormatter.BLUE));
         String paginationControls = ColorFormatter.colorText("[N] Next", ColorFormatter.GREEN) + "  |  " +
                 ColorFormatter.colorText("[P] Previous", ColorFormatter.GREEN) + "  |  " +
                 ColorFormatter.colorText("[C] Change Items per Page", ColorFormatter.GREEN) + "  |  " +
-                ColorFormatter.colorText("[E] Exit", ColorFormatter.RED);
+                ColorFormatter.colorText("\n[E] Exit from Pagination View", ColorFormatter.RED);
         String chooseOption = ColorFormatter.colorText("👉 Choose an option: ", ColorFormatter.PURPLE);
 
         System.out.println(ConsoleFormatter.centerText(pageInfo));
-//        System.out.println(ConsoleFormatter.centerText("📦 Items per Page: " + itemsPerPage));
         System.out.println(ConsoleFormatter.centerText(paginationControls));
         System.out.print(ConsoleFormatter.centerText(chooseOption));
     }

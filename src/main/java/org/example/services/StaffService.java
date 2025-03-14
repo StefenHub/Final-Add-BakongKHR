@@ -1,10 +1,9 @@
-package org.example.controllers;
+package org.example.services;
 
+import org.example.controllers.StaffController;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.example.views.menuViewer.CustomerMenuViewer;
-import org.example.services.OrderService;
-import org.example.services.PaymentService;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -256,13 +255,17 @@ public class StaffService {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Select payment method:", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("1. QR Code", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("2. Cash", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("3. Go Back", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        int paymentMethod = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText(" Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3, false);
+        if (paymentMethod == 3) return;
+        else if (paymentMethod == 1) {
+            displayMessage("���️ QR Code payment selected.", ColorFormatter.YELLOW);
 
-        int paymentMethod = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 2, false);
-        int orderId = placeOrder(paymentMethod);
-
-        if (orderId == -1) return;
-
-        processPayment(orderId, paymentMethod);
+        }
+        else if (paymentMethod == 2) {
+            displayMessage("�� Cash payment selected.", ColorFormatter.YELLOW);
+            processPayment(placeOrder(paymentMethod), paymentMethod);
+        }
     }
 
     private boolean validateCart() {

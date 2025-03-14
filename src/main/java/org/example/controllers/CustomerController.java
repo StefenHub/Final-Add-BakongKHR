@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.services.QRCode;
 import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
 import org.example.services.PaymentService;
@@ -25,7 +26,7 @@ public class CustomerController {
     int tableWidth = 100; // Wider table width
     int leftPadding = (consoleWidth - tableWidth) / 2;
     String padding = " ".repeat(leftPadding);
-    private boolean paymentSuccessful;
+    private QRCode PaymentProcess;
 
     public CustomerController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
@@ -233,21 +234,15 @@ public class CustomerController {
     private void confirmAndPay() {
         if (!validateCart()) return;
         orderService.viewCart();
-
-
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
         }
 
         displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
+        double grandTotal = 0;
+        PaymentProcess.QRCodePayment(grandTotal);
 
-        int paymentMethod = 1; // QR Code is the only option
-        int orderId = placeOrder(paymentMethod);
-
-        if (orderId == -1) return;
-
-        processPayment(orderId, paymentMethod);
     }
 
 
@@ -257,31 +252,6 @@ public class CustomerController {
             return false;
         }
         return true;
-    }
-
-    // Places the order and returns the order ID
-    private int placeOrder(int paymentMethod) {
-        System.out.println("🛒 Placing Order...");
-        int orderId = orderService.placeOrder(paymentMethod);
-
-        if (orderId == -1) {
-            displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
-        } else {
-            System.out.println("✅ Order placed successfully! Order ID: " + orderId);
-        }
-        return orderId;
-    }
-
-    // Handles the payment process
-    private void processPayment(int orderId, int paymentMethod) {
-        displayMessage("🔄 Processing payment for Order ID: " + orderId, ColorFormatter.YELLOW);
-
-        if (orderService.processPayment(orderId, paymentMethod)) {
-            displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
-            orderService.generateReceipt(orderId, paymentMethod);
-        } else {
-            displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
-        }
     }
 
     // Utility method to display formatted messages
