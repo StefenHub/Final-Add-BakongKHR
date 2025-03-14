@@ -237,6 +237,7 @@ public class CustomerController {
 
         orderService.viewCart();
 
+
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
@@ -251,6 +252,7 @@ public class CustomerController {
 
         processPayment(orderId, paymentMethod);
     }
+
 
     private boolean validateCart() {
         if (orderService.isCartEmpty()) {

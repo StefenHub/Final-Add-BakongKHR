@@ -210,10 +210,6 @@ public class QRCode {
             attempt++;
             TimeUnit.SECONDS.sleep(interval); // ✅ Wait before retrying
         }
-
-//        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
-//                "⏳ Transaction validation failed after multiple attempts.",
-//                ColorFormatter.RED + ColorFormatter.BOLD)));
     } catch (Exception e) {
         System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
                 "Exception: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
