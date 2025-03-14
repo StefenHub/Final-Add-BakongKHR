@@ -291,7 +291,6 @@ public class CustomerController {
     }
 
 
-
     // Added cart confirmation before placing the order
     private boolean confirmOrder() {
         System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
@@ -336,3 +335,4 @@ public class CustomerController {
 
     }
 }
+

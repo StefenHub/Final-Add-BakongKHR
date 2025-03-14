@@ -34,7 +34,7 @@ public class OrderService {
                 item.put("item_id", rs.getInt("item_id"));
                 item.put("name", rs.getString("name"));
                 item.put("description", rs.getString("description"));
-                item.put("category", rs.getInt("category_id")); // Fix: Ensure correct data type
+                item.put("category", rs.getInt("category_id"));
                 item.put("size", rs.getString("size"));
                 item.put("base_price", rs.getDouble("base_price"));
                 item.put("sell_price", rs.getDouble("sell_price"));
@@ -42,6 +42,7 @@ public class OrderService {
                 menuItems.add(item);
             }
         } catch (SQLException e) {
+            System.err.println("❌ Error fetching menu items: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -307,7 +308,7 @@ public class OrderService {
         Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now()); // Better alternative to ZoneId
 
         String orderQuery = "INSERT INTO orders (payment_method, total_price, order_date) VALUES (?, ?, ?)";
-        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size,quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size, quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false); // Start transaction
@@ -342,15 +343,16 @@ public class OrderService {
                             orderItemStmt.setInt(1, orderId);
                             orderItemStmt.setInt(2, itemId);
                             orderItemStmt.setString(3, (String) item.get("name"));
-                            orderItemStmt.setString(4, (String) item.get("size"));
                             orderItemStmt.setString(4, (String) item.get("description"));
-                            orderItemStmt.setInt(5, quantity);
-                            orderItemStmt.setDouble(6, sellPrice);
-                            orderItemStmt.setDouble(7, discount);
-                            orderItemStmt.setDouble(8, totalPrice);
+                            orderItemStmt.setString(5, (String) item.get("size"));
+                            orderItemStmt.setInt(6, quantity);
+                            orderItemStmt.setDouble(7, sellPrice);
+                            orderItemStmt.setDouble(8, discount);
+                            orderItemStmt.setDouble(9, totalPrice);
 
+                            orderItemStmt.addBatch(); // Add to batch
                         }
-                        orderItemStmt.executeBatch();
+                        orderItemStmt.executeBatch(); // Execute batch
 
                         conn.commit(); // Commit transaction
                         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN + ColorFormatter.BOLD)));
@@ -375,5 +377,4 @@ public class OrderService {
             return -3;
         }
     }
-
 }

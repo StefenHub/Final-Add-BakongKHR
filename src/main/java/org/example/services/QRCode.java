@@ -42,9 +42,9 @@ public class QRCode {
                 paymentSuccessful = true;
             } catch (WriterException e) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: Failed to generate QR Code: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Do you want to retry? (yes/no): ", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Do you want to retry? (y/n): ", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
                 String retry = scanner.nextLine().trim().toLowerCase();
-                if (!retry.equals("yes")) {
+                if (!retry.equals("y")) {
                     break;
                 }
             }
