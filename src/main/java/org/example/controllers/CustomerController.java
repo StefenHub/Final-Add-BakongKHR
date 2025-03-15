@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.services.QRCode;
 import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
 import org.example.services.PaymentService;
@@ -231,8 +232,8 @@ public class CustomerController {
     }
 
     private void confirmAndPay() {
-        if (!validateCart()) return;
-        orderService.viewCart();
+        if (!validateCart()) return; // Ensure cart is not empty
+        orderService.viewCart(); // Display cart details
 
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
@@ -241,13 +242,60 @@ public class CustomerController {
 
         displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
 
-        int paymentMethod = 1; // QR Code is the only option
-        int orderId = placeOrder(paymentMethod);
+        boolean paymentSuccessful = false;
+        while (!paymentSuccessful) {
+            paymentSuccessful = processPayment();  // This will handle QR payment first
 
-        if (orderId == -1) return;
+            if (!paymentSuccessful) {
+                displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Retry payment? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                if (!scanner.nextLine().trim().equalsIgnoreCase("y")) {
+                    displayMessage("❌ Payment process aborted.", ColorFormatter.RED);
+                    return;
+                }
+            }
+        }
 
-        processPayment(orderId, paymentMethod);
+        // Proceed with placing the order **only if payment is successful**
+        if (paymentSuccessful) {
+            displayMessage("✅ Payment successful. Placing order...", ColorFormatter.GREEN);
+            int paymentMethod = 1; // Set payment method (modify if needed)
+            int orderId = placeOrder(paymentMethod);
+
+            if (orderId == -1) {
+                displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
+            } else {
+                displayMessage("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN);
+            }
+        }
     }
+
+
+    private boolean processPayment() {
+        double grandTotal = orderService.calculateTotalAmount();
+        displayMessage("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW);
+        displayMessage("Payment confirmation pending...", ColorFormatter.GREEN);
+
+        try {
+            String paymentStatus = PaymentService.QRCodePayment(grandTotal);
+
+            if ("✅ Success: Success".equals(paymentStatus)) {
+                return true;
+            } else if (paymentStatus.contains("Unauthorized")) {
+                // Handle token expiration or invalidation
+                displayMessage("❌ Token expired or invalid. Please log in again.", ColorFormatter.RED);
+                return false;
+            } else {
+                displayMessage("❌ Payment failed: ", ColorFormatter.RED);
+                return false;
+            }
+        } catch (Exception e) {
+            displayMessage("❌ Payment failed: " + e.getMessage(), ColorFormatter.RED);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     private boolean validateCart() {
         if (orderService.isCartEmpty()) {
@@ -259,36 +307,26 @@ public class CustomerController {
 
     // Places the order and returns the order ID
     private int placeOrder(int paymentMethod) {
-        System.out.println("🛒 Placing Order...");
+        assert ConsoleFormatter.colorText("🛒 Placing Order...", ColorFormatter.YELLOW) != null;
+        displayMessage("🛒 Placing Order...", ColorFormatter.YELLOW);
         int orderId = orderService.placeOrder(paymentMethod);
 
         if (orderId == -1) {
             displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
         } else {
-            System.out.println("✅ Order placed successfully! Order ID: " + orderId);
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: ", String.valueOf(orderId))) );
+
         }
         return orderId;
     }
 
-    // Handles the payment process
-    private void processPayment(int orderId, int paymentMethod) {
-        displayMessage("🔄 Processing payment for Order ID: " + orderId, ColorFormatter.YELLOW);
 
-        if (orderService.processPayment(orderId, paymentMethod)) {
-            displayMessage("✅ Payment successful. Thank you for your order!", ColorFormatter.GREEN);
-            orderService.generateReceipt(orderId, paymentMethod);
-        } else {
-            displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
-        }
-    }
 
-    // Utility method to display formatted messages
     private void displayMessage(String message, String color) {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
     }
 
 
-    // Added cart confirmation before placing the order
     private boolean confirmOrder() {
         System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         return scanner.nextLine().trim().equalsIgnoreCase("y");
@@ -315,21 +353,6 @@ public class CustomerController {
                 System.out.println(formatText("❌ Invalid input. Please enter a valid number.", ColorFormatter.RED + ColorFormatter.BOLD));
             }
         }
-    }
-
-    // test customer controller
-    public static void main(String[] args) {
-        try {
-            Scanner scanner = new Scanner(System.in);
-            OrderService orderService = new OrderService();
-            CustomerController customerController = new CustomerController(scanner, orderService);
-            customerController.start();
-        } catch (Exception e) {
-            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ An error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
-            e.printStackTrace();
-            System.exit(1);
-        }
-
     }
 }
 

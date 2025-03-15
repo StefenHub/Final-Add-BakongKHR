@@ -224,7 +224,7 @@ public class OrderService {
             // Truncate long names to fit within 20 characters
             int nameMaxLength = 20;
             String formattedName = name.length() > nameMaxLength
-                    ? name.substring(0, nameMaxLength - 3) + "..." // Truncate only if needed
+                    ? name.substring(0, nameMaxLength - 3) + "..."
                     : name;
 
             // Print the item row
@@ -250,14 +250,14 @@ public class OrderService {
         try {
             double grandTotal = calculateTotalAmount();  // ✅ Get total order amount
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            Thread.sleep(2000);
-//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment confirmed via QR Code.", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             // ✅ Pass grandTotal to QR Code Payment
-            QRCode.QRCodePayment(grandTotal);
+            PaymentService paymentService = new PaymentService();
+            String md5 = paymentService.QRCodePayment(grandTotal);
+
+            Thread.sleep(2000);
+
             clearCart();  // ✅ Clear the cart after successful payment
             return true;
         } catch (Exception e) {
@@ -268,7 +268,7 @@ public class OrderService {
     }
 
 
-    private double calculateTotalAmount() {
+    public double calculateTotalAmount() {
         double totalAmount = 0;
         for (Map<String, Object> item : cart) {
             double sellPrice = item.get("sell_price") != null ? (double) item.get("sell_price") : 0;
@@ -304,21 +304,21 @@ public class OrderService {
         }
 
         double totalAmount = calculateTotalAmount();
-        String paymentMethodString = "QR Code"; // Can be expanded for other payment methods
-        Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now()); // Better alternative to ZoneId
+        String paymentMethodString = "QR Code";
+        Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now());
 
         String orderQuery = "INSERT INTO orders (payment_method, total_price, order_date) VALUES (?, ?, ?)";
         String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size, quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false); // Start transaction
+            conn.setAutoCommit(false);
 
             try (PreparedStatement orderStmt = conn.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement orderItemStmt = conn.prepareStatement(orderItemQuery)) {
 
                 // Insert order
                 orderStmt.setString(1, paymentMethodString);
-                orderStmt.setDouble(2, totalAmount);  // ✅ Fixed: total_price now correctly included
+                orderStmt.setDouble(2, totalAmount);
                 orderStmt.setTimestamp(3, orderTimestamp);
                 orderStmt.executeUpdate();
 
@@ -327,11 +327,11 @@ public class OrderService {
                     if (generatedKeys.next()) {
                         int orderId = generatedKeys.getInt(1);
 
-                        // Iterate over cart instead of menu items
+
                         for (Map<String, Object> item : cart) {
                             if (item.get("sell_price") == null || item.get("discount") == null) {
                                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Missing price data for item: " + item, ColorFormatter.RED + ColorFormatter.BOLD)));
-                                continue; // Skip item if critical data is missing
+                                continue;
                             }
 
                             int itemId = ((Number) item.get("item_id")).intValue();
@@ -355,14 +355,13 @@ public class OrderService {
                         orderItemStmt.executeBatch(); // Execute batch
 
                         conn.commit(); // Commit transaction
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN + ColorFormatter.BOLD)));
                         return orderId;
                     } else {
                         throw new SQLException("❌ Failed to retrieve order ID.");
                     }
                 }
             } catch (SQLException e) {
-                conn.rollback(); // Rollback transaction on error
+                conn.rollback();
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
                 e.printStackTrace();
                 return -2;

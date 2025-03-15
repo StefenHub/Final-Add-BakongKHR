@@ -47,4 +47,8 @@ public class ConsoleFormatter {
     public static void printSuccessMessage(String message) {
         System.out.println(centerText(ColorFormatter.colorText("✅ " + message, ColorFormatter.GREEN)));
     }
+
+    public static String colorText(String s, String yellow) {
+        return null;
+    }
 }
