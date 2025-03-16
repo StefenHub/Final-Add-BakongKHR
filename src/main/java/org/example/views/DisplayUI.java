@@ -1,5 +1,6 @@
 package org.example.views;
 
+import com.google.zxing.WriterException;
 import org.example.controllers.AdminController;
 import org.example.controllers.ChefController;
 import org.example.controllers.CustomerController;
@@ -10,13 +11,9 @@ import org.example.utils.*;
 import java.util.Scanner;
 
 public class DisplayUI {
-    public static void displayUI() {
+    public static void displayUI() throws WriterException {
         Scanner scanner = new Scanner(System.in);
         OrderService orderService = new OrderService();
-
-        final String ADMIN_PASSWORD = "admin123";
-        final String STAFF_PASSWORD = "staff123";
-        final String CHEF_PASSWORD = "chef123";
 
         boolean firstTime = true;
 
@@ -34,38 +31,51 @@ public class DisplayUI {
 
             switch (choice) {
                 case 1:
-                    if (AuthUtils.authenticateUser(scanner, STAFF_PASSWORD, "Staff")) {
+                    if (AuthUtils.login(scanner)) {
                         StaffController staffController = new StaffController(scanner, orderService);
                         staffController.start();
+                    } else {
+                        ConsoleFormatter.printErrorMessage("❌ Access Denied: Incorrect Staff credentials.");
                     }
                     break;
+
                 case 2:
-                    if (AuthUtils.authenticateUser(scanner, CHEF_PASSWORD, "Kitchen")) {
-                        ChefController chefController = new ChefController(scanner);
-                        chefController.start();
+                    if (AuthUtils.login(scanner)) {
+                        new AdminController().adminPanel(scanner);
+                    } else {
+                        ConsoleFormatter.printErrorMessage("❌ Access Denied: Incorrect Admin credentials.");
                     }
                     break;
+
                 case 3:
                     CustomerController customerController = new CustomerController(scanner, orderService);
                     customerController.start();
                     break;
+
                 case 4:
-                    if (AuthUtils.authenticateUser(scanner, ADMIN_PASSWORD, "Admin")) {
-                        new AdminController().adminPanel(scanner);
+                    if (AuthUtils.login(scanner)) {
+                        ChefController chefController = new ChefController(scanner);
+                        chefController.start();
+                    } else {
+                        ConsoleFormatter.printErrorMessage("❌ Incorrect credentials for Kitchen staff.");
                     }
                     break;
+
                 case 5:
                     ConsoleFormatter.printSuccessMessage("✅ Exiting... Thank you for using our system!");
                     scanner.close();
                     return;
+
                 default:
-                    ConsoleFormatter.printErrorMessage((ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    ConsoleFormatter.printErrorMessage(
+                            ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)
+                    );
             }
         }
     }
 
     // test the displayUI method
-    public static void main(String[] args) {
+    public static void main(String[] args) throws WriterException {
         displayUI();
     }
 }

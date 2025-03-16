@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import com.google.zxing.WriterException;
 import org.example.services.QRCode;
 import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
@@ -38,7 +39,7 @@ public class CustomerController {
         return ConsoleFormatter.centerText(ColorFormatter.colorText(text, color));
     }
 
-    public void start() {
+    public void start() throws WriterException {
         while (true) {
             // Create a table with a SINGLE wide column
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
@@ -148,7 +149,7 @@ public class CustomerController {
         }
     }
 
-    private void viewCartWithEditOptions() {
+    private void viewCartWithEditOptions() throws WriterException {
         while (true) {
             orderService.viewCart();
             if (orderService.isCartEmpty()) {
@@ -231,19 +232,58 @@ public class CustomerController {
         }
     }
 
-    private void confirmAndPay() {
+    private void confirmAndPay() throws WriterException {
         if (!validateCart()) return;
-        orderService.viewCart();
+
+        // Display Cart and retrieve the total
+        double grandTotal = orderService.viewCart();  // Fetching total directly
+        if (grandTotal <= 0) {
+            displayMessage("⚠️ Error: No items in the cart or invalid total!", ColorFormatter.RED);
+            return;
+        }
+
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
         }
 
-        displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
-        double grandTotal = 0;
-        PaymentProcess.QRCodePayment(grandTotal);
+        displayMessage("\n💳 ─── Payment Process ───", ColorFormatter.CYAN);
 
+        boolean isStaff = checkUserRole(); // Implement method to check user role
+
+        // Display payment options based on role
+        if (isStaff) {
+            displayMessage("👉 Select Payment Method:\n1. Cash\n2. QR Code\n3. Go Back", ColorFormatter.YELLOW);
+        } else {
+            displayMessage("👉 Customers can only pay via QR Code.\n1. QR Code\n2. Go Back", ColorFormatter.YELLOW);
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+
+        if (isStaff) {
+            if (choice == 1) {
+                paymentService.processCashPayment(grandTotal, isStaff);
+            } else if (choice == 2) {
+                paymentService.processQRPayment(grandTotal);
+            } else {
+                displayMessage("↩️ Going back to the main menu.", ColorFormatter.BLUE);
+            }
+        } else {
+            if (choice == 1) {
+                paymentService.processQRPayment(grandTotal);
+            } else {
+                displayMessage("↩️ Going back to the main menu.", ColorFormatter.BLUE);
+            }
+        }
     }
+
+
+    private boolean checkUserRole() {
+        // Implement method to check user role (true for staff, false for customers)
+        return false; // Change this logic to fetch the actual user role
+    }
+
 
 
     private boolean validateCart() {
@@ -258,7 +298,6 @@ public class CustomerController {
     private void displayMessage(String message, String color) {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
     }
-
 
     // Added cart confirmation before placing the order
     private boolean confirmOrder() {
@@ -301,7 +340,5 @@ public class CustomerController {
             e.printStackTrace();
             System.exit(1);
         }
-
     }
 }
-

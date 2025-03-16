@@ -15,7 +15,7 @@ public class MenuItemManager {
 
     // ------------------ Delete Menu Item ------------------
     public static void deleteMenuItem(Scanner scanner) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             // Step 1: Fetch and Display Categories
             List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
@@ -97,7 +97,7 @@ public class MenuItemManager {
 
     // ------------------ Add Multiple Menu Items ------------------
     public static void addMenuItem(Scanner scanner) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             // Step 1: Fetch and Display Categories
             List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
@@ -218,7 +218,7 @@ public class MenuItemManager {
     }
 
     public static void viewMenuItemsByCategorySeparately() {
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT id, name FROM categories ORDER BY id")) {
 
@@ -236,7 +236,7 @@ public class MenuItemManager {
     }
 
     private static void displayItemsByCategory1(int categoryId) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             String sql = "SELECT * FROM menuitemsadmin WHERE category_id = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt(1, categoryId);

@@ -2,7 +2,7 @@ package org.example.services;
 
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.Utils;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -29,7 +29,7 @@ public class CategoryManager {
     public static List<Map<String, Object>> getCategories() {
         List<Map<String, Object>> categories = new ArrayList<>();
 
-        try (Connection conn = DatabaseConnection.connect()) {
+        try (Connection conn = DatabaseUtil.connect()) {
             if (conn == null) {
                 throw new SQLException("❌ Failed to connect to the database.");
             }
@@ -87,7 +87,7 @@ public class CategoryManager {
             return;
         }
 
-        try (Connection conn = DatabaseConnection.connect()) {
+        try (Connection conn = DatabaseUtil.connect()) {
             if (conn == null) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
@@ -135,7 +135,7 @@ public class CategoryManager {
             return;
         }
 
-        try (Connection conn = DatabaseConnection.connect()) {
+        try (Connection conn = DatabaseUtil.connect()) {
             if (conn == null) {
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;

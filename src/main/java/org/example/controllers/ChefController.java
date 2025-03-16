@@ -82,11 +82,11 @@ public class ChefController {
 
     // View all orders
     private void viewAllOrders() {
-        int totalItems = getTotalItems("SELECT COUNT(*) FROM order_items");
+        int totalItems = getTotalItems("SELECT COUNT(*) FROM orders");
         pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items ORDER BY order_date DESC LIMIT ? OFFSET ?", pagination.getCurrentPage());
+            displayOrders("SELECT order_id, customer_name, quantity, size, description, order_date, status FROM orders ORDER BY order_date DESC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
@@ -108,11 +108,11 @@ public class ChefController {
 
     // View pending orders
     private void viewPendingOrders() {
-        int totalItems = getTotalItems("SELECT COUNT(*) FROM order_items WHERE order_status = 'pending'");
+        int totalItems = getTotalItems("SELECT COUNT(*) FROM orders WHERE status = 'pending'");
         pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, name, quantity, size, description, order_date, order_status FROM order_items WHERE order_status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", pagination.getCurrentPage());
+            displayOrders("SELECT order_id, customer_name, quantity, size, description, order_date, status FROM orders WHERE status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
@@ -136,7 +136,7 @@ public class ChefController {
     private void displayOrders(String query, int page) {
         int offset = (page - 1) * pagination.getItemsPerPage();
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, pagination.getItemsPerPage());
@@ -145,21 +145,21 @@ public class ChefController {
 
             Table table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Customer Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Order Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             while (rs.next()) {
                 table.addCell(String.valueOf(rs.getInt("order_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("customer_name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(String.valueOf(rs.getInt("quantity")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getTimestamp("order_date").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("order_status"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(rs.getString("status"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
             System.out.println(table.render());
@@ -172,7 +172,7 @@ public class ChefController {
 
     // Get total items for pagination
     private int getTotalItems(String countQuery) {
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(countQuery)) {
 
@@ -251,8 +251,8 @@ public class ChefController {
             }
         }
 
-        String query = "UPDATE order_items SET order_status = ? WHERE order_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        String query = "UPDATE orders SET status = ? WHERE order_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, newStatus);

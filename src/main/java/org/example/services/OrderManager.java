@@ -1,7 +1,7 @@
 package org.example.services;
 
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.ColorFormatter;
 import org.example.utils.PaginationFormatter;
 import org.nocrala.tools.texttablefmt.*;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class OrderManager {
 
     public static void viewAllCustomerOrders() {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             int totalItems = getTotalOrderItems(conn);
             PaginationFormatter pagination = new PaginationFormatter(totalItems, 10);
 

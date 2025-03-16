@@ -136,42 +136,79 @@ public class QRCode {
         }, 1, 1, TimeUnit.SECONDS);
     }
 
-    private void waitForPayment(String md5) {
-        int waitTime = 200; // Initial wait time 200ms
-        long startTime = System.currentTimeMillis();
-        long timeout = 60 * 1000; // 60 seconds
+//    private void waitForPayment(String md5) {
+//        int waitTime = 200; // Initial wait time 200ms
+//        long startTime = System.currentTimeMillis();
+//        long timeout = 60 * 1000; // 60 seconds
+//
+//        while (System.currentTimeMillis() - startTime < timeout) {
+//            try {
+//                Thread.sleep(waitTime);
+//
+//                if (validateMd5(md5)) {
+//                    SwingUtilities.invokeLater(() -> {
+//                        statusLabel.setText("\t✅ Payment Successful!");
+//                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//                        frame.dispose();
+//                    });
+//                    System.out.println("✅ Payment Successful!");
+//                    return;
+//                }
+//
+//                waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
+//
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                return;
+//            }
+//        }
+//
+//        // Timeout case
+//        SwingUtilities.invokeLater(() -> {
+//            statusLabel.setText("❌ Payment Timed Out");
+//            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+//            frame.dispose();
+//        });
+//    }
+private void waitForPayment(String md5) {
+    int waitTime = 200; // Initial wait time 200ms
+    long startTime = System.currentTimeMillis();
+    long timeout = 60 * 1000; // 60 seconds
 
-        while (System.currentTimeMillis() - startTime < timeout) {
-            try {
-                Thread.sleep(waitTime);
+    while (System.currentTimeMillis() - startTime < timeout) {
+        try {
+            Thread.sleep(waitTime);
 
-                if (validateMd5(md5)) {
-                    SwingUtilities.invokeLater(() -> {
-                        statusLabel.setText("\t✅ Payment Successful!");
-                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        frame.dispose();
-                    });
-                    return;
-                }
-
-                waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            // ✅ Only mark as paid if API confirms it
+            if (validateMd5(md5)) {
+                SwingUtilities.invokeLater(() -> {
+                    statusLabel.setText("\t✅ Payment Good!");
+                    JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    frame.dispose();
+                });
+                System.out.println("✅ Payment JokJey!");
                 return;
             }
-        }
 
-        // Timeout case
-        SwingUtilities.invokeLater(() -> {
-            statusLabel.setText("❌ Payment Timed Out");
-            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
-            frame.dispose();
-        });
+            waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
     }
 
+    // Timeout case
+    SwingUtilities.invokeLater(() -> {
+        statusLabel.setText("❌ Payment Timed Out");
+        JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+        frame.dispose();
+    });
+}
 
-    boolean validateMd5(String md5) {
+
+
+    static boolean validateMd5(String md5) {
     try {
         HttpClient httpClient = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -197,14 +234,14 @@ public class QRCode {
                 String responseMessage = jsonResponse.path("responseMessage").asText();
 
                 if (responseCode == 0) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
-                            "✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+//                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+//                            "✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
                     return true; // ✅ Payment verified
                 }
             } else {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
-                        "❌ API Error: " + response.statusCode() + " - " + response.body(),
-                        ColorFormatter.RED + ColorFormatter.BOLD)));
+//                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+//                        "❌ API Error: " + response.statusCode() + " - " + response.body(),
+//                        ColorFormatter.RED + ColorFormatter.BOLD)));
             }
 
             attempt++;
