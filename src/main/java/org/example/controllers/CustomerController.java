@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import com.google.zxing.WriterException;
 import org.example.services.QRCode;
 import org.example.views.menuViewer.CustomerMenuViewer;
 import org.example.services.OrderService;
@@ -26,7 +27,7 @@ public class CustomerController {
     int tableWidth = 100; // Wider table width
     int leftPadding = (consoleWidth - tableWidth) / 2;
     String padding = " ".repeat(leftPadding);
-    private boolean paymentSuccessful;
+    private QRCode PaymentProcess;
 
     public CustomerController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
@@ -38,7 +39,7 @@ public class CustomerController {
         return ConsoleFormatter.centerText(ColorFormatter.colorText(text, color));
     }
 
-    public void start() {
+    public void start() throws WriterException {
         while (true) {
             // Create a table with a SINGLE wide column
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
@@ -148,7 +149,7 @@ public class CustomerController {
         }
     }
 
-    private void viewCartWithEditOptions() {
+    private void viewCartWithEditOptions() throws WriterException {
         while (true) {
             orderService.viewCart();
             if (orderService.isCartEmpty()) {
@@ -231,70 +232,58 @@ public class CustomerController {
         }
     }
 
-    private void confirmAndPay() {
-        if (!validateCart()) return; // Ensure cart is not empty
-        orderService.viewCart(); // Display cart details
+    private void confirmAndPay() throws WriterException {
+        if (!validateCart()) return;
+
+        // Display Cart and retrieve the total
+        double grandTotal = orderService.viewCart();  // Fetching total directly
+        if (grandTotal <= 0) {
+            displayMessage("⚠️ Error: No items in the cart or invalid total!", ColorFormatter.RED);
+            return;
+        }
 
         if (!confirmOrder()) {
             displayMessage("❌ Order canceled.", ColorFormatter.RED);
             return;
         }
 
-        displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
+        displayMessage("\n💳 ─── Payment Process ───", ColorFormatter.CYAN);
 
-        boolean paymentSuccessful = false;
-        while (!paymentSuccessful) {
-            paymentSuccessful = processPayment();  // This will handle QR payment first
+        boolean isStaff = checkUserRole(); // Implement method to check user role
 
-            if (!paymentSuccessful) {
-                displayMessage("❌ Payment failed. Please try again.", ColorFormatter.RED);
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Retry payment? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-                if (!scanner.nextLine().trim().equalsIgnoreCase("y")) {
-                    displayMessage("❌ Payment process aborted.", ColorFormatter.RED);
-                    return;
-                }
-            }
+        // Display payment options based on role
+        if (isStaff) {
+            displayMessage("👉 Select Payment Method:\n1. Cash\n2. QR Code\n3. Go Back", ColorFormatter.YELLOW);
+        } else {
+            displayMessage("👉 Customers can only pay via QR Code.\n1. QR Code\n2. Go Back", ColorFormatter.YELLOW);
         }
 
-        // Proceed with placing the order **only if payment is successful**
-        if (paymentSuccessful) {
-            displayMessage("✅ Payment successful. Placing order...", ColorFormatter.GREEN);
-            int paymentMethod = 1; // Set payment method (modify if needed)
-            int orderId = placeOrder(paymentMethod);
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
 
-            if (orderId == -1) {
-                displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
+        if (isStaff) {
+            if (choice == 1) {
+                paymentService.processCashPayment(grandTotal, isStaff);
+            } else if (choice == 2) {
+                paymentService.processQRPayment(grandTotal);
             } else {
-                displayMessage("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN);
+                displayMessage("↩️ Going back to the main menu.", ColorFormatter.BLUE);
+            }
+        } else {
+            if (choice == 1) {
+                paymentService.processQRPayment(grandTotal);
+            } else {
+                displayMessage("↩️ Going back to the main menu.", ColorFormatter.BLUE);
             }
         }
     }
 
 
-    private boolean processPayment() {
-        double grandTotal = orderService.calculateTotalAmount();
-        displayMessage("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW);
-        displayMessage("Payment confirmation pending...", ColorFormatter.GREEN);
-
-        try {
-            String paymentStatus = PaymentService.QRCodePayment(grandTotal);
-
-            if ("✅ Success: Success".equals(paymentStatus)) {
-                return true;
-            } else if (paymentStatus.contains("Unauthorized")) {
-                // Handle token expiration or invalidation
-                displayMessage("❌ Token expired or invalid. Please log in again.", ColorFormatter.RED);
-                return false;
-            } else {
-                displayMessage("❌ Payment failed: ", ColorFormatter.RED);
-                return false;
-            }
-        } catch (Exception e) {
-            displayMessage("❌ Payment failed: " + e.getMessage(), ColorFormatter.RED);
-            e.printStackTrace();
-            return false;
-        }
+    private boolean checkUserRole() {
+        // Implement method to check user role (true for staff, false for customers)
+        return false; // Change this logic to fetch the actual user role
     }
+
 
 
     private boolean validateCart() {
@@ -305,28 +294,12 @@ public class CustomerController {
         return true;
     }
 
-    // Places the order and returns the order ID
-    private int placeOrder(int paymentMethod) {
-        assert ConsoleFormatter.colorText("🛒 Placing Order...", ColorFormatter.YELLOW) != null;
-        displayMessage("🛒 Placing Order...", ColorFormatter.YELLOW);
-        int orderId = orderService.placeOrder(paymentMethod);
-
-        if (orderId == -1) {
-            displayMessage("❌ Order placement failed! Please try again.", ColorFormatter.RED);
-        } else {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: ", String.valueOf(orderId))) );
-
-        }
-        return orderId;
-    }
-
-
-
+    // Utility method to display formatted messages
     private void displayMessage(String message, String color) {
         System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
     }
 
-
+    // Added cart confirmation before placing the order
     private boolean confirmOrder() {
         System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         return scanner.nextLine().trim().equalsIgnoreCase("y");
@@ -354,5 +327,18 @@ public class CustomerController {
             }
         }
     }
-}
 
+    // test customer controller
+    public static void main(String[] args) {
+        try {
+            Scanner scanner = new Scanner(System.in);
+            OrderService orderService = new OrderService();
+            CustomerController customerController = new CustomerController(scanner, orderService);
+            customerController.start();
+        } catch (Exception e) {
+            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ An error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+}

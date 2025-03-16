@@ -2,7 +2,7 @@ package org.example.services;
 
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.PaginationFormatter;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -25,7 +25,7 @@ public class OrderService {
         List<Map<String, Object>> menuItems = new ArrayList<>();
         String sql = "SELECT * FROM menuitemsadmin ORDER BY category_id, name";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -59,7 +59,7 @@ public class OrderService {
         int itemsPerPage = 5;
         PaginationFormatter paginator = new PaginationFormatter(items.size(), itemsPerPage);
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             while (true) {
                 displayPage(items, paginator.getCurrentPage(), paginator.getItemsPerPage(), paginator.getTotalPages());
                 boolean shouldContinue = paginator.handlePagination();
@@ -103,7 +103,7 @@ public class OrderService {
         List<Map<String, Object>> categories = new ArrayList<>();
         String sql = "SELECT id, name FROM categories ORDER BY id"; // ✅ Fetch category names
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -134,20 +134,33 @@ public class OrderService {
     }
 
     // Generate a receipt
-    public void generateReceipt(int orderId, int paymentMethod) {
-        String query = "SELECT order_id, total_price, order_date FROM orders WHERE order_id = ?"; // Fix: Changed total_amount to total_price
+    void generateReceipt(int orderId, int paymentMethod) {
+        String query = "SELECT order_id, total_price, order_date FROM orders WHERE order_id = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, orderId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    System.out.println("\n\t--- Receipt ---");
-                    System.out.println("\tOrder ID: " + rs.getInt("order_id"));
-                    System.out.println("\tTotal Amount: $" + rs.getDouble("total_price"));
-                    System.out.println("\tOrder Date: " + rs.getTimestamp("order_date"));
-                    System.out.println("\tPayment Method: " + (paymentMethod == 1 ? "Credit Card" : paymentMethod == 2 ? "PayPal" : "Cash"));
+                    // Create a table for the receipt
+                    Table table = new Table(2, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
+                    CellStyle centerStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
+                    CellStyle leftStyle = new CellStyle(CellStyle.HorizontalAlign.LEFT);
+
+                    // Add receipt details to the table
+                    table.addCell("Order ID", centerStyle);
+                    table.addCell(String.valueOf(rs.getInt("order_id")), leftStyle);
+                    table.addCell("Total Amount", centerStyle);
+                    table.addCell(String.format("$%.2f", rs.getDouble("total_price")), leftStyle);
+                    table.addCell("Order Date", centerStyle);
+                    table.addCell(rs.getTimestamp("order_date").toString(), leftStyle);
+                    table.addCell("Payment Method", centerStyle);
+                    table.addCell(paymentMethod == 1 ? "Credit Card" : paymentMethod == 2 ? "PayPal" : "Cash", leftStyle);
+
+                    // Print the table
+                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\n\t--- Receipt ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
+                    System.out.println(ConsoleFormatter.centerText(table.render()));
                 } else {
                     System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Order ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
@@ -191,15 +204,16 @@ public class OrderService {
         cart.add(cartItem);
     }
 
-    public void viewCart() {
+    public double viewCart() {
         if (cart.isEmpty()) {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Your cart is empty.", ColorFormatter.RED + ColorFormatter.BOLD)));
-            return;
+            return 0;
         }
 
         double grandTotal = 0;
 
         Timestamp order_date = Timestamp.valueOf(LocalDateTime.now()); // Example order date, replace with actual value
+
         System.out.println("📜 RECEIPT ");
         String order_id = "ORD" + order_date.getTime();
         System.out.println("Order ID: " + order_id);
@@ -224,7 +238,7 @@ public class OrderService {
             // Truncate long names to fit within 20 characters
             int nameMaxLength = 20;
             String formattedName = name.length() > nameMaxLength
-                    ? name.substring(0, nameMaxLength - 3) + "..."
+                    ? name.substring(0, nameMaxLength - 3) + "..." // Truncate only if needed
                     : name;
 
             // Print the item row
@@ -237,6 +251,7 @@ public class OrderService {
         System.out.printf("%-5s %-20s %6s %10s %10.2f%n", "", "", "", "Total ($)", grandTotal);
         System.out.println("═════════════════════════════════════════════════════");
         System.out.println("🎉 Thank you for shopping with us! 🎉");
+        return grandTotal;
     }
 
 
@@ -250,14 +265,14 @@ public class OrderService {
         try {
             double grandTotal = calculateTotalAmount();  // ✅ Get total order amount
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            Thread.sleep(2000);
+//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment confirmed via QR Code.", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             // ✅ Pass grandTotal to QR Code Payment
-            PaymentService paymentService = new PaymentService();
-            String md5 = paymentService.QRCodePayment(grandTotal);
-
-            Thread.sleep(2000);
-
+            QRCode.QRCodePayment(grandTotal);
             clearCart();  // ✅ Clear the cart after successful payment
             return true;
         } catch (Exception e) {
@@ -268,7 +283,7 @@ public class OrderService {
     }
 
 
-    public double calculateTotalAmount() {
+    private double calculateTotalAmount() {
         double totalAmount = 0;
         for (Map<String, Object> item : cart) {
             double sellPrice = item.get("sell_price") != null ? (double) item.get("sell_price") : 0;
@@ -304,21 +319,21 @@ public class OrderService {
         }
 
         double totalAmount = calculateTotalAmount();
-        String paymentMethodString = "QR Code";
-        Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now());
+        String paymentMethodString = "QR Code"; // Can be expanded for other payment methods
+        Timestamp orderTimestamp = Timestamp.valueOf(LocalDateTime.now()); // Better alternative to ZoneId
 
         String orderQuery = "INSERT INTO orders (payment_method, total_price, order_date) VALUES (?, ?, ?)";
         String orderItemQuery = "INSERT INTO order_items (order_id, item_id, name, description, size, quantity, sell_price, discount, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false);
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            conn.setAutoCommit(false); // Start transaction
 
             try (PreparedStatement orderStmt = conn.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement orderItemStmt = conn.prepareStatement(orderItemQuery)) {
 
                 // Insert order
                 orderStmt.setString(1, paymentMethodString);
-                orderStmt.setDouble(2, totalAmount);
+                orderStmt.setDouble(2, totalAmount);  // ✅ Fixed: total_price now correctly included
                 orderStmt.setTimestamp(3, orderTimestamp);
                 orderStmt.executeUpdate();
 
@@ -327,11 +342,11 @@ public class OrderService {
                     if (generatedKeys.next()) {
                         int orderId = generatedKeys.getInt(1);
 
-
+                        // Iterate over cart instead of menu items
                         for (Map<String, Object> item : cart) {
                             if (item.get("sell_price") == null || item.get("discount") == null) {
                                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Missing price data for item: " + item, ColorFormatter.RED + ColorFormatter.BOLD)));
-                                continue;
+                                continue; // Skip item if critical data is missing
                             }
 
                             int itemId = ((Number) item.get("item_id")).intValue();
@@ -355,13 +370,14 @@ public class OrderService {
                         orderItemStmt.executeBatch(); // Execute batch
 
                         conn.commit(); // Commit transaction
+                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN + ColorFormatter.BOLD)));
                         return orderId;
                     } else {
                         throw new SQLException("❌ Failed to retrieve order ID.");
                     }
                 }
             } catch (SQLException e) {
-                conn.rollback();
+                conn.rollback(); // Rollback transaction on error
                 System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
                 e.printStackTrace();
                 return -2;
@@ -375,5 +391,10 @@ public class OrderService {
             e.printStackTrace();
             return -3;
         }
+    }
+
+    public double calculateGrandTotal() {
+
+        return 0;
     }
 }

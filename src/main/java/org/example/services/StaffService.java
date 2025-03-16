@@ -1,10 +1,9 @@
-package org.example.controllers;
+package org.example.services;
 
+import org.example.controllers.StaffController;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.example.views.menuViewer.CustomerMenuViewer;
-import org.example.services.OrderService;
-import org.example.services.PaymentService;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -28,12 +27,6 @@ public class StaffService {
     private boolean paymentSuccessful;
 
     public StaffService(Scanner scanner, OrderService orderService) {
-        this.scanner = scanner;
-        this.orderService = orderService;
-        this.paymentService = new PaymentService();
-    }
-
-    public void StaffController(Scanner scanner, OrderService orderService) {
         this.scanner = scanner;
         this.orderService = orderService;
         this.paymentService = new PaymentService();
@@ -206,6 +199,35 @@ public class StaffService {
         }
     }
 
+    private void confirmAndPay() {
+        if (orderService.isCartEmpty()) {
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Your cart is empty. Please add items to cart first.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            return;
+        }
+
+        orderService.viewCart();
+        if (!confirmOrder()) {
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🚪 Going back to the previous menu...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+            return;
+        }
+
+        // Select payment method
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("💳 Select Payment Method", ColorFormatter.CYAN + ColorFormatter.BOLD)));
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("1. QR Code", ColorFormatter.CYAN)));
+        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("2. Cash", ColorFormatter.CYAN)));
+
+        int paymentMethod = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 2, false);
+        if (paymentMethod == -1) {
+            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🚪 Going back to the previous menu...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+            return;
+        }
+
+        int orderId = placeOrder(paymentMethod);
+        if (orderId == -1) return;
+
+        processPayment(orderId, paymentMethod);
+    }
+
     private void editQuantityInCart() {
         System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the ID of the item to edit quantity ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         String input = scanner.nextLine().trim();
@@ -240,37 +262,6 @@ public class StaffService {
         } catch (NumberFormatException e) {
             System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
         }
-    }
-
-    private void confirmAndPay() {
-        if (!validateCart()) return;
-        orderService.viewCart();
-
-        if (!confirmOrder()) {
-            displayMessage("❌ Order canceled.", ColorFormatter.RED);
-            return;
-        }
-
-        displayMessage("💳 --- Payment Process ---", ColorFormatter.CYAN);
-
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Select payment method:", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("1. QR Code", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("2. Cash", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-
-        int paymentMethod = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 2, false);
-        int orderId = placeOrder(paymentMethod);
-
-        if (orderId == -1) return;
-
-        processPayment(orderId, paymentMethod);
-    }
-
-    private boolean validateCart() {
-        if (orderService.isCartEmpty()) {
-            displayMessage("❌ Your cart is empty. Add items before proceeding to payment.", ColorFormatter.RED);
-            return false;
-        }
-        return true;
     }
 
     // Places the order and returns the order ID

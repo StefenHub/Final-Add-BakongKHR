@@ -1,7 +1,7 @@
 package org.example.services;
 
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.Utils;
 import org.mindrot.jbcrypt.BCrypt;
 import org.nocrala.tools.texttablefmt.BorderStyle;
@@ -90,7 +90,7 @@ public class StaffManager {
 
     private static void addStaff(String uuid, String fullName, String username, String password, String email, String phoneNumber, String role, Timestamp timestamp) {
         String sql = "INSERT INTO users (uuid, full_name, username, password, email, phone_number, role, date_time_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setObject(1, UUID.fromString(uuid));
             pstmt.setString(2, fullName);
@@ -143,7 +143,7 @@ public class StaffManager {
 
     private static void updateStaff(UUID uuid, String newName, String newPhone, String newRole) {
         String sql = "UPDATE users SET full_name = ?, phone_number = ?, role = ? WHERE uuid = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, newName);
             pstmt.setString(2, newPhone);
@@ -162,7 +162,7 @@ public class StaffManager {
 
     public static void removeStaff(UUID uuid) {
         String sql = "DELETE FROM users WHERE uuid = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setObject(1, uuid);
             int rowsAffected = pstmt.executeUpdate();
@@ -190,7 +190,7 @@ public class StaffManager {
 
             // Menu Options (Numbers Left-Aligned)
             String[] options = {
-                    "1.  Add Staff",
+                    "1.  Register/Add Staff",
                     "2.  View All Staff",
                     "3.  Update Staff",
                     "4.  Remove Staff",
@@ -231,7 +231,7 @@ public class StaffManager {
 
     public static void viewAllStaff() {
         String sql = "SELECT * FROM users";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 

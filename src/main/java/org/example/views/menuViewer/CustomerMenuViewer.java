@@ -1,12 +1,11 @@
 package org.example.views.menuViewer;
 
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.PaginationFormatter;
 import org.nocrala.tools.texttablefmt.*;
 
 import java.sql.*;
-import java.util.Scanner;
 
 public class CustomerMenuViewer {
     private static final String RESET = "\u001B[0m";
@@ -15,7 +14,7 @@ public class CustomerMenuViewer {
     private static final String RED = "\u001B[31m";
 
     public static void viewMenuItemsCustomer() {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             int totalItems = getTotalItemCount(conn);
             if (totalItems == 0) {
                 System.out.println(RED + "📭 No menu items available." + RESET);

@@ -2,7 +2,7 @@ package org.example.services;
 
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.Utils;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 public class UpdateMenuItem {
     public static void updateMenuItem(Scanner scanner) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
             // Step 1: Fetch and Display Categories
             List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {

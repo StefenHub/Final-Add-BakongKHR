@@ -6,11 +6,9 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
- import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.QRCodeWriter;
 import kh.gov.nbc.bakong_khqr.BakongKHQR;
 import kh.gov.nbc.bakong_khqr.model.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 
@@ -21,7 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.CompletableFuture;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,31 +32,25 @@ public class QRCode {
     private JFrame frame;
     private JLabel statusLabel;
 
-////    public static String QRCodePayment(double grandTotal) {
-////        boolean paymentSuccessful = false;
-////        Scanner scanner = new Scanner(System.in);
-////
-////        while (!paymentSuccessful) {
-////            try {
-////                new QRCode().generateAndDisplayQRCode(grandTotal);
-////                paymentSuccessful = true;
-////            } catch (WriterException e) {
-////                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
-////                        "❌ Error: Failed to generate QR Code: " + e.getMessage(),
-////                        ColorFormatter.RED + ColorFormatter.BOLD)));
-////                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText(
-////                        "Do you want to retry? (yes/no): ", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-////                String retry = scanner.nextLine().trim().toLowerCase();
-////                if (!retry.equals("yes")) {
-////                    break;
-////                }
-////            }
-////        }
-////        return null;
-////    }
-//
-    @Getter
-    private static String latestMd5 = null; // Store the latest MD5 hash
+    public static void QRCodePayment(double grandTotal) {
+        boolean paymentSuccessful = false;
+        Scanner scanner = new Scanner(System.in);
+
+        while (!paymentSuccessful) {
+            try {
+                new QRCode().generateAndDisplayQRCode(grandTotal);
+                paymentSuccessful = true;
+            } catch (WriterException e) {
+                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: Failed to generate QR Code: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Do you want to retry? (y/n): ", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                String retry = scanner.nextLine().trim().toLowerCase();
+                if (!retry.equals("y")) {
+                    break;
+                }
+            }
+        }
+    }
+    private static String latestMd5 = null; // ✅ Store the latest MD5 hash
 
     public String generateAndDisplayQRCode(double grandTotal) throws WriterException {
         IndividualInfo individualInfo = new IndividualInfo();
@@ -74,7 +66,7 @@ public class QRCode {
 
         if (response.getKHQRStatus().getCode() == 0) {
             String qrText = response.getData().getQr();
-            latestMd5 = response.getData().getMd5(); // Store MD5 when QR is generated
+            latestMd5 = response.getData().getMd5(); // ✅ Store MD5 when QR is generated
 
             if (qrText == null || qrText.isEmpty()) {
                 System.out.println("⚠️ Error: QR Code Data is empty!");
@@ -83,7 +75,7 @@ public class QRCode {
 
             BufferedImage qrImage = generateQRImage(qrText, 300, 300);
             displayQRPopup(qrImage, latestMd5);
-            return latestMd5; // Return the MD5 for immediate use
+            return latestMd5; // ✅ Return the MD5 for immediate use
         } else {
             System.out.println("❌ Error: " + response.getKHQRStatus().getMessage());
             return null;
@@ -131,69 +123,102 @@ public class QRCode {
     }
 
     private void startCountdown(int initialTime) {
+        AtomicInteger i = new AtomicInteger(initialTime);
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        AtomicInteger timeLeft = new AtomicInteger(initialTime);
-
         scheduler.scheduleAtFixedRate(() -> {
             SwingUtilities.invokeLater(() -> {
-                if (timeLeft.get() > 0) {
-                    statusLabel.setText("Waiting for Payment... (" + timeLeft.get() + "s)");
-                    timeLeft.decrementAndGet();
-                } else {
-                    scheduler.shutdown();
-                }
+                statusLabel.setText("Waiting for Payment... (" + i.get() + "s)");
             });
+            i.getAndDecrement();
+            if (i.get() < 0) {
+                scheduler.shutdownNow();
+            }
         }, 1, 1, TimeUnit.SECONDS);
     }
 
+//    private void waitForPayment(String md5) {
+//        int waitTime = 200; // Initial wait time 200ms
+//        long startTime = System.currentTimeMillis();
+//        long timeout = 60 * 1000; // 60 seconds
+//
+//        while (System.currentTimeMillis() - startTime < timeout) {
+//            try {
+//                Thread.sleep(waitTime);
+//
+//                if (validateMd5(md5)) {
+//                    SwingUtilities.invokeLater(() -> {
+//                        statusLabel.setText("\t✅ Payment Successful!");
+//                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//                        frame.dispose();
+//                    });
+//                    System.out.println("✅ Payment Successful!");
+//                    return;
+//                }
+//
+//                waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
+//
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                return;
+//            }
+//        }
+//
+//        // Timeout case
+//        SwingUtilities.invokeLater(() -> {
+//            statusLabel.setText("❌ Payment Timed Out");
+//            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+//            frame.dispose();
+//        });
+//    }
+private void waitForPayment(String md5) {
+    int waitTime = 200; // Initial wait time 200ms
+    long startTime = System.currentTimeMillis();
+    long timeout = 60 * 1000; // 60 seconds
 
-    private void waitForPayment(String md5) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        long startTime = System.currentTimeMillis();
-        long timeout = 60 * 1000; // 60 seconds
+    while (System.currentTimeMillis() - startTime < timeout) {
+        try {
+            Thread.sleep(waitTime);
 
-        Runnable task = () -> {
-            if (System.currentTimeMillis() - startTime >= timeout) {
+            // ✅ Only mark as paid if API confirms it
+            if (validateMd5(md5)) {
                 SwingUtilities.invokeLater(() -> {
-                    statusLabel.setText("❌ Payment Timed Out");
-                    JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+                    statusLabel.setText("\t✅ Payment Good!");
+                    JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     frame.dispose();
                 });
-                scheduler.shutdown();
+                System.out.println("✅ Payment JokJey!");
                 return;
             }
 
-            if (validateMd5(md5)) {
-                SwingUtilities.invokeLater(() -> {
-                    statusLabel.setText("✅ Payment Successful!");
-                    JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    frame.dispose();
-                    placeOrder();
-                });
-                scheduler.shutdown();
-            }
-        };
+            waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
 
-        scheduler.scheduleAtFixedRate(task, 2, 2, TimeUnit.SECONDS); // Check every 2 seconds
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
     }
 
+    // Timeout case
+    SwingUtilities.invokeLater(() -> {
+        statusLabel.setText("❌ Payment Timed Out");
+        JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
+        frame.dispose();
+    });
+}
 
-    private void placeOrder() {
-        // Simulate placing the order
-        System.out.println("🛒 Placing Order...");
-        int orderId = (int) (Math.random() * 100); // Generate a random order ID
-        System.out.println("✅ Order placed successfully! Order ID: " + orderId);
-    }
 
 
-
-    private boolean validateMd5(String md5) {
+    static boolean validateMd5(String md5) {
+    try {
         HttpClient httpClient = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(new Md5Request(md5));
 
-        try {
-            String requestBody = objectMapper.writeValueAsString(new Md5Request(md5));
+        int maxAttempts = 5; // ✅ Increase retry attempts
+        int attempt = 0;
+        int interval = 2; // ✅ Reduce interval to 2 seconds
 
+        while (attempt < maxAttempts) {
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(API_URL))
                     .header("Authorization", AUTH_TOKEN)
@@ -201,45 +226,40 @@ public class QRCode {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            CompletableFuture<HttpResponse<String>> responseFuture = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-            responseFuture.thenAccept(response -> {
-                if (response.statusCode() == 200) {
-                    try {
-                        JsonNode jsonResponse = objectMapper.readTree(response.body());
-                        int responseCode = jsonResponse.path("responseCode").asInt();
-                        String responseMessage = jsonResponse.path("responseMessage").asText();
+            if (response.statusCode() == 200) {
+                JsonNode jsonResponse = objectMapper.readTree(response.body());
+                int responseCode = jsonResponse.path("responseCode").asInt();
+                String responseMessage = jsonResponse.path("responseMessage").asText();
 
-                        if (responseCode == 0) {
-                            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
-                                    "✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
-                            latestMd5 = null; // Reset MD5 after success
-                        }
-                    } catch (Exception e) {
-                        System.err.println("❌ JSON Parsing Error: " + e.getMessage());
-                    }
-                } else {
-                    System.out.println("❌ API Error: " + response.statusCode() + " - " + response.body());
+                if (responseCode == 0) {
+//                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+//                            "✅ Success: " + responseMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    return true; // ✅ Payment verified
                 }
-            }).exceptionally(e -> {
-                System.err.println("❌ Request Failed: " + e.getMessage());
-                return null;
-            });
+            } else {
+//                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+//                        "❌ API Error: " + response.statusCode() + " - " + response.body(),
+//                        ColorFormatter.RED + ColorFormatter.BOLD)));
+            }
 
-            return latestMd5 == null; // Check if payment was validated
-
-        } catch (Exception e) {
-            System.err.println("❌ Exception: " + e.getMessage());
-            return false;
+            attempt++;
+            TimeUnit.SECONDS.sleep(interval); // ✅ Wait before retrying
         }
+    } catch (Exception e) {
+        System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText(
+                "Exception: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
     }
 
-    public String getMD5() {
+    return false;
+}
+
+    public static String getLatestMd5() {
+        // ✅ Implement a method to check if MD5 is available
         return latestMd5;
     }
 
-    @Setter
-    @Getter
     private static class Md5Request {
         private String md5;
 
@@ -247,7 +267,18 @@ public class QRCode {
             this.md5 = md5;
         }
 
+        public String getMd5() {
+            return md5;
+        }
+
+        public void setMd5(String md5) {
+            this.md5 = md5;
+        }
     }
 
-
+    // test QR
+    public static void main(String[] args) {
+        double grandTotal = 100.0; // Example grand total
+        QRCodePayment(grandTotal);
+    }
 }

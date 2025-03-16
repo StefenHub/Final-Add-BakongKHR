@@ -2,7 +2,7 @@ package org.example.services;
 
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
-import org.example.utils.DatabaseConnection;
+import org.example.utils.DatabaseUtil;
 import org.example.utils.Utils;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
@@ -45,7 +45,7 @@ public class ReportManager {
                 "GROUP BY oi.item_id, mi.name " +
                 "ORDER BY total_quantity DESC";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setDate(1, Date.valueOf(startDate));
@@ -113,7 +113,7 @@ public class ReportManager {
                 "JOIN orders o ON oi.order_id = o.order_id " + // Fix: Ensure we use correct table for date
                 "WHERE DATE(o.order_date) BETWEEN ? AND ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setDate(1, Date.valueOf(startDate));
@@ -160,7 +160,7 @@ public class ReportManager {
                 "JOIN menuItemsAdmin mi ON oi.item_id = mi.item_id " +  // Ensure base_price comes from 'menuItemsAdmin'
                 "WHERE DATE(o.order_date) BETWEEN ? AND ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setDate(1, Date.valueOf(startDate));

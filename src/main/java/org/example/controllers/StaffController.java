@@ -2,6 +2,7 @@ package org.example.controllers;
 
 import org.example.services.OrderManager;
 import org.example.services.OrderService;
+import org.example.services.StaffService;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 import org.nocrala.tools.texttablefmt.BorderStyle;
@@ -12,6 +13,8 @@ import org.nocrala.tools.texttablefmt.Table;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
+
+import static org.example.services.OrderManager.viewAllCustomerOrders;
 
 public class StaffController {
     private final Scanner scanner;
@@ -67,7 +70,7 @@ public class StaffController {
             }
             switch (choice) {
                 case 1:
-                    OrderManager.viewAllCustomerOrders();
+                    viewAllCustomerOrders();
                     break;
                 case 2:
 //                    CustomerController customerController = new CustomerController(scanner, orderService);
