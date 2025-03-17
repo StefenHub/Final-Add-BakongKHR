@@ -30,7 +30,7 @@ public class CustomerMenuViewer {
                 if (!shouldContinue) break; // Exit the loop if the user chooses to exit
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
+            System.out.println((RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
@@ -55,7 +55,7 @@ public class CustomerMenuViewer {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                System.out.println(ConsoleFormatter.centerText(RED + "🚫 No items found." + RESET));
+                System.out.println((RED + "🚫 No items found." + RESET));
                 return;
             }
 

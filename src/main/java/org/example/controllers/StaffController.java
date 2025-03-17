@@ -63,9 +63,9 @@ public class StaffController {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-            int choice = validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);
+            int choice = validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);
             if (choice == -1) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Going back to the previous menu...", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Going back to the previous menu...", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
             switch (choice) {
@@ -73,15 +73,13 @@ public class StaffController {
                     viewAllCustomerOrders();
                     break;
                 case 2:
-//                    CustomerController customerController = new CustomerController(scanner, orderService);
-//                    customerController.start();
                       StaffService staffService = new StaffService(scanner , orderService);
                         staffService.start();
                     break;
                 case 3:
                     return;
                 default:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -105,12 +103,12 @@ public class StaffController {
             try {
                 int value = Integer.parseInt(input);
                 if (value < min || value > max) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Input out of range. Please enter a number between " + min + " and " + max + ".", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("Input out of range. Please enter a number between " + min + " and " + max + ".", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     return value;
                 }
             } catch (NumberFormatException e) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }

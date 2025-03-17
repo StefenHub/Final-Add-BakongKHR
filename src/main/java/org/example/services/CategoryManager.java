@@ -45,7 +45,7 @@ public class CategoryManager {
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace(); // ✅ Print full stack trace for debugging
         }
         return categories;
@@ -56,7 +56,7 @@ public class CategoryManager {
     public static void displayCategories() {
         List<Map<String, Object>> categories = getCategories();
         if (categories.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ No categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
 
@@ -74,22 +74,22 @@ public class CategoryManager {
     // Add categories
     public static void addCategory(Scanner scanner) {
         displayCategories();
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the name of the new category ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.print((ColorFormatter.colorText("Enter the name of the new category ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         String newCategory = scanner.nextLine().trim();
 
         if (newCategory.equalsIgnoreCase("b")) return;
         if (newCategory.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Category name cannot be empty.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Category name cannot be empty.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
         if (!newCategory.matches("[a-zA-Z0-9\\s]+")) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid category name. Only alphanumeric characters and spaces are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Invalid category name. Only alphanumeric characters and spaces are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
 
         try (Connection conn = DatabaseUtil.connect()) {
             if (conn == null) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
@@ -98,13 +98,13 @@ public class CategoryManager {
                 pstmt.setString(1, newCategory);
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Category '" + newCategory + "' added successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("✅ Category '" + newCategory + "' added successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Category already exists.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("⚠️ Category already exists.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
@@ -115,7 +115,7 @@ public class CategoryManager {
         if (categories.isEmpty()) return;
 
         int categoryNumber = Utils.validateIntegerInput(scanner,
-                ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the number of the category to remove ([b] to go back): ",
+                (ColorFormatter.colorText("Enter the number of the category to remove ([b] to go back): ",
                         ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
 
         if (categoryNumber == -1) return;
@@ -125,19 +125,19 @@ public class CategoryManager {
         int categoryId = (int) selectedCategory.get("id");
         String categoryName = (String) selectedCategory.get("name");
 
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText(
+        System.out.print((ColorFormatter.colorText(
                 "Are you sure you want to remove the category '" + categoryName + "' and all its items? (y/n): ",
                 ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
         String confirm = scanner.nextLine().trim().toLowerCase();
         if (!confirm.equals("y")) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Removal canceled.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("⚠️ Removal canceled.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
             return;
         }
 
         try (Connection conn = DatabaseUtil.connect()) {
             if (conn == null) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Failed to connect to the database.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
@@ -157,14 +157,14 @@ public class CategoryManager {
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
                     conn.commit(); // ✅ Commit transaction
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Category '" + categoryName + "' and all its items removed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("✅ Category '" + categoryName + "' and all its items removed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 } else {
                     conn.rollback(); // ✅ Rollback if deletion failed
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Failed to remove category.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Failed to remove category.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
@@ -201,7 +201,7 @@ public class CategoryManager {
                 System.out.println(WHITE_BORDER + padding + line + RESET);
             }
 
-            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 3);
+            int choice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 3);
             if (choice == -1) return;
 
             switch (choice) {
@@ -217,7 +217,7 @@ public class CategoryManager {
                 case 0:
                     return;
                 default:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }

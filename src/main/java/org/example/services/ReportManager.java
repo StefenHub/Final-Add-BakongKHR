@@ -52,19 +52,19 @@ public class ReportManager {
             pstmt.setDate(2, Date.valueOf(endDate));
 
             // ✅ Improved Logging
-            logger.info(ConsoleFormatter.centerText(ColorFormatter.colorText(
+            logger.info((ColorFormatter.colorText(
                     String.format("📊 Running Sales Report for period: %s to %s", startDate, endDate),
                     ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             ResultSet rs = pstmt.executeQuery();
 
             // ✅ Print Report Header
-            System.out.println(ConsoleFormatter.centerText(
+            System.out.println((
                     ColorFormatter.colorText("--- Sales Report ---", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             String header = String.format("%-10s %-30s %-15s %-15s", "Item ID", "Name", "Quantity Sold", "Total Sales");
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(header, ColorFormatter.GREEN + ColorFormatter.BOLD)));
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("---------------------------------------------------------------", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText(header, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("---------------------------------------------------------------", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             // ✅ Track Grand Total Sales
             double grandTotalSales = 0;
@@ -80,17 +80,17 @@ public class ReportManager {
                 grandTotalSales += totalSales; // ✅ Accumulate total sales
 
                 String formattedRow = String.format("%-10d %-30s %-15d $%-14.2f", itemId, name, totalQuantity, totalSales);
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(formattedRow, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText(formattedRow, ColorFormatter.GREEN + ColorFormatter.BOLD)));
             }
 
             if (!hasData) {
-                System.out.println(ConsoleFormatter.centerText(
+                System.out.println((
                         ColorFormatter.colorText("No sales data available for the specified period.", ColorFormatter.RED + ColorFormatter.BOLD)));
             } else {
                 // ✅ Print Grand Total Sales at the End
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("---------------------------------------------------------------", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("---------------------------------------------------------------", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 String totalSalesMsg = String.format("Grand Total Sales: $%.2f", grandTotalSales);
-                System.out.println(ConsoleFormatter.centerText(
+                System.out.println((
                         ColorFormatter.colorText(totalSalesMsg, ColorFormatter.GREEN + ColorFormatter.BOLD)));
             }
 
@@ -124,7 +124,7 @@ public class ReportManager {
 
             ResultSet rs = pstmt.executeQuery();
 
-            System.out.println(ConsoleFormatter.centerText(
+            System.out.println((
                     ColorFormatter.colorText("--- Revenue Report ---", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             if (rs.next()) {
@@ -132,10 +132,10 @@ public class ReportManager {
 
                 // Fix: Format string before applying color
                 String revenueMessage = String.format("Total Revenue from %s to %s: $%.2f", startDate, endDate, totalRevenue);
-                System.out.println(ConsoleFormatter.centerText(
+                System.out.println((
                         ColorFormatter.colorText(revenueMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
             } else {
-                System.out.println(ConsoleFormatter.centerText(
+                System.out.println((
                         ColorFormatter.colorText("No revenue data available for the specified period.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
 
@@ -148,7 +148,7 @@ public class ReportManager {
     public static void generateProfitReport(LocalDate startDate, LocalDate endDate) {
         // Ensure dates are not null
         if (startDate == null || endDate == null) {
-            System.out.println(ConsoleFormatter.centerText(
+            System.out.println((
                     ColorFormatter.colorText("❌ Error: Start Date or End Date is null!", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
@@ -173,18 +173,18 @@ public class ReportManager {
 
             ResultSet rs = pstmt.executeQuery();
 
-            System.out.println(ConsoleFormatter.centerText(
+            System.out.println((
                     ColorFormatter.colorText("--- Profit Report ---", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             if (rs.next()) {
                 double totalProfit = rs.getDouble("total_profit");
 
                 if (totalProfit == 0) {
-                    System.out.println(ConsoleFormatter.centerText(
+                    System.out.println((
                             ColorFormatter.colorText("No profit generated for the specified period.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     String profitMessage = String.format("Total Profit from %s to %s: $%.2f", startDate, endDate, totalProfit);
-                    System.out.println(ConsoleFormatter.centerText(
+                    System.out.println((
                             ColorFormatter.colorText(profitMessage, ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 }
             } else {
@@ -194,7 +194,7 @@ public class ReportManager {
         } catch (SQLException e) {
             System.out.println(ConsoleFormatter.centerText(
                     ColorFormatter.colorText("❌ An error occurred while generating the profit report.", ColorFormatter.RED + ColorFormatter.BOLD)));
-            e.printStackTrace(); // Consider replacing with a proper logging framework
+            e.printStackTrace();
         }
     }
 
@@ -203,19 +203,19 @@ public class ReportManager {
     private static LocalDate[] promptForDateRange(Scanner scanner) {
         while (true) {
             try {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter start date (YYYY-MM-DD): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter start date (YYYY-MM-DD): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 LocalDate startDate = LocalDate.parse(scanner.nextLine().trim());
                 System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter end date (YYYY-MM-DD): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 LocalDate endDate = LocalDate.parse(scanner.nextLine().trim());
 
                 if (startDate.isAfter(endDate)) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Start date cannot be after end date. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Start date cannot be after end date. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     continue;
                 }
 
                 return new LocalDate[]{startDate, endDate};
             } catch (Exception e) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid date format. Please enter the date in YYYY-MM-DD format.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Invalid date format. Please enter the date in YYYY-MM-DD format.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -251,12 +251,12 @@ public class ReportManager {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(reportManager.WHITE_BORDER + reportManager.padding + line + reportManager.RESET);
+                System.out.println(reportManager.WHITE_BORDER + line + reportManager.RESET);
             }
 
-            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 4);
+            int choice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 4);
             if (choice == -1) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Invalid input! Try again.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("⚠️ Invalid input! Try again.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
                 continue;
             }
 
@@ -276,7 +276,7 @@ public class ReportManager {
                 case 4:
                     return;
                 default:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("⚠️Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }

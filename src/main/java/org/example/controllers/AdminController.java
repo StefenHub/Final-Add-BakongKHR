@@ -1,6 +1,8 @@
 package org.example.controllers;
 
 import java.util.Scanner;
+
+import com.google.zxing.WriterException;
 import org.example.services.*;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
@@ -11,6 +13,8 @@ import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import static org.example.views.DisplayUI.displayUI;
+
 public class AdminController {
 
     private static final String RESET = "\u001B[0m";
@@ -20,7 +24,7 @@ public class AdminController {
     private final int tableWidth = 100; // Wider table width
     private final String padding = " ".repeat((consoleWidth - tableWidth) / 2);
 
-    public void adminPanel(Scanner scanner) {
+    public void adminPanel(Scanner scanner) throws WriterException {
         while (true) {
             Table table = new Table(1, BorderStyle.UNICODE_BOX_DOUBLE_BORDER_WIDE, ShownBorders.ALL);
             table.setColumnWidth(0, 80, 90);
@@ -45,10 +49,10 @@ public class AdminController {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
-            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 5);
+            int choice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 5);
             if (choice == -1) continue;
 
             switch (choice) {
@@ -65,11 +69,11 @@ public class AdminController {
                     ReportManager.manageReports();
                     break;
                 case 5:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("👋 Exiting... Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-                    System.exit(0);
+                    System.out.println((ColorFormatter.colorText("👋 Exiting... Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    displayUI();
                     break;
                 default:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -100,10 +104,10 @@ public class AdminController {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
-            int choice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 6);
+            int choice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 6);
             if (choice == -1) {
                 return;
             }
@@ -127,7 +131,7 @@ public class AdminController {
                 case 6:
                     return;
                 default:
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid choice! Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -135,6 +139,8 @@ public class AdminController {
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
             new AdminController().adminPanel(scanner);
+        } catch (WriterException e) {
+            throw new RuntimeException(e);
         }
     }
 }

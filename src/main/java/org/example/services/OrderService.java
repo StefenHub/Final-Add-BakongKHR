@@ -52,7 +52,7 @@ public class OrderService {
     // Display menu items in a table format with pagination
     public void displayMenuItems(List<Map<String, Object>> items, Scanner scanner) {
         if (items.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("No items available.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("No items available.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
 
@@ -159,14 +159,14 @@ public class OrderService {
                     table.addCell(paymentMethod == 1 ? "Credit Card" : paymentMethod == 2 ? "PayPal" : "Cash", leftStyle);
 
                     // Print the table
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\n\t--- Receipt ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
-                    System.out.println(ConsoleFormatter.centerText(table.render()));
+                    System.out.println((ColorFormatter.colorText("\n\t--- Receipt ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
+                    System.out.println((table.render()));
                 } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Order ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Order ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
         }
     }
@@ -174,7 +174,7 @@ public class OrderService {
     // Remove an item from the cart
     public boolean removeItemFromCart(int itemId) {
         boolean removed = cart.removeIf(item -> (int) item.get("item_id") == itemId); // Optimized with lambda
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(removed ? "✅ Item removed successfully!" : "❌ Item not found.", removed ? ColorFormatter.GREEN : ColorFormatter.RED)));
+        System.out.println((ColorFormatter.colorText(removed ? "✅ Item removed successfully!" : "❌ Item not found.", removed ? ColorFormatter.GREEN : ColorFormatter.RED)));
         return removed;
     }
 
@@ -191,12 +191,12 @@ public class OrderService {
     // Add an item to the cart
     public void addItemToCart(Map<String, Object> item, int quantity) {
         if (item == null) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error: Attempted to add a null item to the cart.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Error: Attempted to add a null item to the cart.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return;
         }
 
         if (!item.containsKey("base_price")) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("⚠️ Warning: base_price is missing for item: " + item, ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("⚠️ Warning: base_price is missing for item: " + item, ColorFormatter.YELLOW + ColorFormatter.BOLD)));
         }
 
         Map<String, Object> cartItem = new HashMap<>(item);
@@ -206,7 +206,7 @@ public class OrderService {
 
     public double viewCart() {
         if (cart.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Your cart is empty.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Your cart is empty.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return 0;
         }
 
@@ -215,16 +215,14 @@ public class OrderService {
         Timestamp order_date = Timestamp.valueOf(LocalDateTime.now()); // Example order date, replace with actual value
 
         System.out.println("📜 RECEIPT ");
-        String order_id = "ORD" + order_date.getTime();
+        String order_id = "";
         System.out.println("Order ID: " + order_id);
         System.out.println("Order Date: " + order_date);
-        System.out.println("-------------------------------------------------------------");
-
+        System.out.println("───────────────────────────────────────────────────────────");
         // Table Header
         System.out.printf("\t%-5s %-20s %6s %10s %10s%n",
                 "ID", "Description", "Qty", "Disc ($)", "Total ($)");
-        System.out.println("-------------------------------------------------------------");
-
+        System.out.println("───────────────────────────────────────────────────────────");
         for (Map<String, Object> cartItem : cart) {
             int itemId = (int) cartItem.get("item_id");
             String name = (String) cartItem.get("name");
@@ -247,9 +245,9 @@ public class OrderService {
         }
 
         // Print Footer
-        System.out.println("─────────────────────────────────────────────────────");
+        System.out.println("───────────────────────────────────────────────────────────");
         System.out.printf("%-5s %-20s %6s %10s %10.2f%n", "", "", "", "Total ($)", grandTotal);
-        System.out.println("═════════════════════════════════════════════════════");
+        System.out.println("═══════════════════════════════════════════════════════════");
         System.out.println("🎉 Thank you for shopping with us! 🎉");
         return grandTotal;
     }
@@ -264,19 +262,17 @@ public class OrderService {
     public boolean processPayment(int orderId, int paymentMethod) {
         try {
             double grandTotal = calculateTotalAmount();  // ✅ Get total order amount
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("🔄 Redirecting to QR Payment...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("Payment confirmation pending...", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             Thread.sleep(2000);
-//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment confirmed via QR Code.", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-//            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Payment processed successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             // ✅ Pass grandTotal to QR Code Payment
             QRCode.QRCodePayment(grandTotal);
             clearCart();  // ✅ Clear the cart after successful payment
             return true;
         } catch (Exception e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Payment failed: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Payment failed: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
             return false;
         }
@@ -296,7 +292,7 @@ public class OrderService {
 
     private void clearCart() {
         cart.clear();
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Cart cleared successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.println((ColorFormatter.colorText("✅ Cart cleared successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
     }
 
     // Update the quantity of an item in the cart
@@ -304,17 +300,17 @@ public class OrderService {
         for (Map<String, Object> item : cart) {
             if ((int) item.get("item_id") == itemId) {
                 item.put("quantity", newQuantity);
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Cart item updated successfully!", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("✅ Cart item updated successfully!", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return true;
             }
         }
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Item ID not found in the cart.", ColorFormatter.RED + ColorFormatter.BOLD)));
+        System.out.println((ColorFormatter.colorText("❌ Item ID not found in the cart.", ColorFormatter.RED + ColorFormatter.BOLD)));
         return false;
     }
 
     public int placeOrder(int paymentMethod) {
         if (cart.isEmpty()) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Your cart is empty. Please add items before placing an order.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Your cart is empty. Please add items before placing an order.", ColorFormatter.RED + ColorFormatter.BOLD)));
             return -1;
         }
 
@@ -345,7 +341,7 @@ public class OrderService {
                         // Iterate over cart instead of menu items
                         for (Map<String, Object> item : cart) {
                             if (item.get("sell_price") == null || item.get("discount") == null) {
-                                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Missing price data for item: " + item, ColorFormatter.RED + ColorFormatter.BOLD)));
+                                System.out.println((ColorFormatter.colorText("❌ Missing price data for item: " + item, ColorFormatter.RED + ColorFormatter.BOLD)));
                                 continue; // Skip item if critical data is missing
                             }
 
@@ -370,7 +366,7 @@ public class OrderService {
                         orderItemStmt.executeBatch(); // Execute batch
 
                         conn.commit(); // Commit transaction
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                        System.out.println((ColorFormatter.colorText("✅ Order placed successfully! Order ID: " + orderId, ColorFormatter.GREEN + ColorFormatter.BOLD)));
                         return orderId;
                     } else {
                         throw new SQLException("❌ Failed to retrieve order ID.");
@@ -378,16 +374,16 @@ public class OrderService {
                 }
             } catch (SQLException e) {
                 conn.rollback(); // Rollback transaction on error
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
                 e.printStackTrace();
                 return -2;
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
             return -2;
         } catch (Exception e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Unexpected error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Unexpected error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
             return -3;
         }

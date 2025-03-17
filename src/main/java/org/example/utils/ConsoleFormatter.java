@@ -20,32 +20,32 @@ public class ConsoleFormatter {
     public static String centerText(String text) {
         int terminalWidth = getTerminalWidth();
         int padding = Math.max((terminalWidth - text.length()) / 2, 0);
-        return " ".repeat(padding) + text;
+        return " " + text;
     }
 
     public static void printCenteredTable(String renderedTable) {
         int terminalWidth = getTerminalWidth();
         for (String line : renderedTable.split("\n")) {
             int padding = Math.max((terminalWidth - line.length()) / 2, 0);
-            System.out.println(" ".repeat(padding) + line);
+            System.out.println(" " + line);
         }
     }
 
     public static void printCategoryHeader(String category) {
         String coloredCategory = ColorFormatter.colorText("📌 Category: " + category, ColorFormatter.YELLOW);
-        System.out.println("\n" + centerText(coloredCategory));
+        System.out.println("\n" + (coloredCategory));
     }
 
     public static void printSeparator() {
-        System.out.println(centerText(ColorFormatter.colorText("═".repeat(50), ColorFormatter.BLUE)));
+        System.out.println((ColorFormatter.colorText("═".repeat(50), ColorFormatter.BLUE)));
     }
 
     public static void printErrorMessage(String message) {
-        System.out.println(centerText(ColorFormatter.colorText("⚠️ " + message, ColorFormatter.RED)));
+        System.out.println((ColorFormatter.colorText("⚠️ " + message, ColorFormatter.RED)));
     }
 
     public static void printSuccessMessage(String message) {
-        System.out.println(centerText(ColorFormatter.colorText("✅ " + message, ColorFormatter.GREEN)));
+        System.out.println((ColorFormatter.colorText("✅ " + message, ColorFormatter.GREEN)));
     }
 
     public static String colorText(String s, String yellow) {

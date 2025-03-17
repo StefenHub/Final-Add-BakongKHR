@@ -67,20 +67,20 @@ public class CustomerController {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
-            int choice = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 5, false);
+            int choice = validateIntegerInput((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 5, false);
             switch (choice) {
                 case 1 -> CustomerMenuViewer.viewMenuItemsCustomer();
                 case 2 -> addItemToCart();
                 case 3 -> viewCartWithEditOptions();
                 case 4 -> confirmAndPay();
                 case 0 -> {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Thank you for visiting! Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("Thank you for visiting! Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                     return;
                 }
-                default -> System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                default -> System.out.println((ColorFormatter.colorText("Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -89,12 +89,12 @@ public class CustomerController {
         while (true) {
             List<Map<String, Object>> categories = orderService.getCategories();
             if (categories.isEmpty()) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ No categories available.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
             // Display categories in a formatted table
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("\n📋 --- Available Categories ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("\n📋 --- Available Categories ---", ColorFormatter.CYAN + ColorFormatter.BOLD)));
             Table table = new Table(2, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Category Name", new CellStyle(CellStyle.HorizontalAlign.CENTER)); // ✅ Fixed label
@@ -107,9 +107,9 @@ public class CustomerController {
             System.out.println(table.render());
 
             // Select category
-            int categoryChoice = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("🔢 Enter category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size(), true);
+            int categoryChoice = validateIntegerInput((ColorFormatter.colorText("🔢 Enter category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size(), true);
             if (categoryChoice == -1) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("↩ Going back to the previous menu...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("↩ Going back to the previous menu...", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
                 break;
             }
 
@@ -118,33 +118,33 @@ public class CustomerController {
             int selectedCategoryId = (int) selectedCategory.get("id"); // ✅ Get category ID
             String selectedCategoryName = (String) selectedCategory.get("name"); // ✅ Get category name
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("📂 Displaying items for category: " + selectedCategoryName, ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("📂 Displaying items for category: " + selectedCategoryName, ColorFormatter.BLUE + ColorFormatter.BOLD)));
             orderService.displayItemsByCategory(String.valueOf(selectedCategoryId), scanner); // ✅ Pass category ID as String
 
             // Prompt user to enter item ID
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Enter the ID of the item to add to cart ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.print((ColorFormatter.colorText("🛒 Enter the ID of the item to add to cart ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             String input = scanner.nextLine().trim();
             if (input.equalsIgnoreCase("b")) continue;
 
             try {
                 int itemId = Integer.parseInt(input);
-                int quantity = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("🔢 Enter quantity: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 100, false);
+                int quantity = validateIntegerInput((ColorFormatter.colorText("🔢 Enter quantity: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 100, false);
 
                 Map<String, Object> item = orderService.getItemById(itemId);
                 if (item == null) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid item ID. No item found.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid item ID. No item found.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     continue;
                 }
 
                 orderService.addItemToCart(item, quantity);
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Item added to cart successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("✅ Item added to cart successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
                 // Ask if user wants to add another item
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("➕ Add another item? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("➕ Add another item? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 if (!scanner.nextLine().trim().equalsIgnoreCase("y")) break;
 
             } catch (NumberFormatException e) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid number.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Invalid input. Please enter a valid number.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
@@ -153,7 +153,7 @@ public class CustomerController {
         while (true) {
             orderService.viewCart();
             if (orderService.isCartEmpty()) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Your cart is empty. Nothing to edit.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Your cart is empty. Nothing to edit.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
@@ -180,10 +180,10 @@ public class CustomerController {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
-            int cartOption = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 4, false);
+            int cartOption = validateIntegerInput((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 4, false);
             switch (cartOption) {
                 case 1 -> editQuantityInCart();
                 case 2 -> removeItemFromCart();
@@ -191,44 +191,44 @@ public class CustomerController {
                 case 4 -> {
                     return;
                 }
-                default -> System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                default -> System.out.println((ColorFormatter.colorText("Invalid choice. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         }
     }
 
     private void editQuantityInCart() {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the ID of the item to edit quantity ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.print((ColorFormatter.colorText("Enter the ID of the item to edit quantity ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("b")) return;
 
         try {
             int itemId = Integer.parseInt(input);
-            int newQuantity = validateIntegerInput(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the new quantity: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 100, false);
+            int newQuantity = validateIntegerInput((ColorFormatter.colorText("Enter the new quantity: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 100, false);
 
             if (orderService.updateCartItemQuantity(itemId, newQuantity)) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Quantity updated successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Quantity updated successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             } else {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid item ID. No changes made.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Invalid item ID. No changes made.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         } catch (NumberFormatException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
     private void removeItemFromCart() {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the ID of the item to remove ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.print((ColorFormatter.colorText("Enter the ID of the item to remove ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("b")) return;
 
         try {
             int itemId = Integer.parseInt(input);
             if (orderService.removeItemFromCart(itemId)) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Item removed from cart successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Item removed from cart successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             } else {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid item ID. No changes made.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("Invalid item ID. No changes made.", ColorFormatter.RED + ColorFormatter.BOLD)));
             }
         } catch (NumberFormatException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
@@ -296,12 +296,12 @@ public class CustomerController {
 
     // Utility method to display formatted messages
     private void displayMessage(String message, String color) {
-        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
+        System.out.println((ColorFormatter.colorText(message, color + ColorFormatter.BOLD)));
     }
 
     // Added cart confirmation before placing the order
     private boolean confirmOrder() {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+        System.out.print((ColorFormatter.colorText("🛒 Do you want to confirm your order? (y/n): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
         return scanner.nextLine().trim().equalsIgnoreCase("y");
     }
 
@@ -336,7 +336,7 @@ public class CustomerController {
             CustomerController customerController = new CustomerController(scanner, orderService);
             customerController.start();
         } catch (Exception e) {
-            System.err.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ An error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.err.println((ColorFormatter.colorText("❌ An error occurred: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
             System.exit(1);
         }

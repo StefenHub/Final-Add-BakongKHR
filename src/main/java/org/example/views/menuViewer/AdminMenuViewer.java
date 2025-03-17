@@ -29,7 +29,7 @@ public class AdminMenuViewer {
                 if (!shouldContinue) break; // Exit if user chooses to quit
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
+            System.out.println((RED + "⚠️ Database connection error: " + e.getMessage() + RESET));
         }
     }
 
@@ -54,7 +54,7 @@ public class AdminMenuViewer {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                System.out.println(ConsoleFormatter.centerText(RED + "🚫 No items found." + RESET));
+                System.out.println((RED + "🚫 No items found." + RESET));
                 return;
             }
 
@@ -66,7 +66,8 @@ public class AdminMenuViewer {
                 String category = rs.getString("category_name");
                 if (!category.equals(currentCategory)) {
                     if (table != null) {
-                        ConsoleFormatter.printCenteredTable(table.render());
+                       // ConsoleFormatter.printCenteredTable(table.render());
+                        table.render();
                     }
                     currentCategory = category;
                     ConsoleFormatter.printCategoryHeader(currentCategory);
@@ -82,9 +83,9 @@ public class AdminMenuViewer {
                 table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.RIGHT));
             }
 
-            ConsoleFormatter.printCenteredTable(table.render());
+            System.out.println(table.render());
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(RED + "⚠️ Error retrieving menu items: " + e.getMessage() + RESET));
+            System.out.println((RED + "⚠️ Error retrieving menu items: " + e.getMessage() + RESET));
         }
     }
 

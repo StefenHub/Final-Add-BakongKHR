@@ -10,7 +10,7 @@ public class AuthUtils {
 
     // Authentication method for Admin, Staff, and Kitchen
     public static boolean authenticateUser(Scanner scanner, String correctPassword, String role) {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔑 Enter " + role + " Password: ", ColorFormatter.CYAN)));
+        System.out.print((ColorFormatter.colorText("🔑 Enter " + role + " Password: ", ColorFormatter.CYAN)));
         String inputPassword = scanner.nextLine().trim();
 
         if (inputPassword.equals(correctPassword)) {
@@ -24,10 +24,10 @@ public class AuthUtils {
 
     // Method for user login
     public static boolean login(Scanner scanner) {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔑 Enter Username: ", ColorFormatter.CYAN)));
+        System.out.print((ColorFormatter.colorText("🔑 Enter Username: ", ColorFormatter.CYAN)));
         String username = scanner.nextLine().trim();
 
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔑 Enter Password: ", ColorFormatter.CYAN)));
+        System.out.print((ColorFormatter.colorText("🔑 Enter Password: ", ColorFormatter.CYAN)));
         String password = scanner.nextLine().trim();
 
         String query = "SELECT password FROM users WHERE username = ?";
@@ -52,7 +52,7 @@ public class AuthUtils {
 
     // Method for user registration
     public static void register(Scanner scanner) {
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔑 Enter New Username: ", ColorFormatter.CYAN)));
+        System.out.print((ColorFormatter.colorText("🔑 Enter New Username: ", ColorFormatter.CYAN)));
         String username = scanner.nextLine().trim();
 
         if (!StaffValidation.isValidUsername(username)) {
@@ -76,7 +76,7 @@ public class AuthUtils {
             return;
         }
 
-        System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("🔑 Enter New Password: ", ColorFormatter.CYAN)));
+        System.out.print((ColorFormatter.colorText("🔑 Enter New Password: ", ColorFormatter.CYAN)));
         String password = scanner.nextLine().trim();
 
         if (!StaffValidation.isValidPassword(password)) {

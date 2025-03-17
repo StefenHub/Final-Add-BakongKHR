@@ -9,6 +9,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import kh.gov.nbc.bakong_khqr.BakongKHQR;
 import kh.gov.nbc.bakong_khqr.model.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.example.utils.ColorFormatter;
 import org.example.utils.ConsoleFormatter;
 
@@ -50,6 +52,8 @@ public class QRCode {
             }
         }
     }
+    // ✅ Implement a method to check if MD5 is available
+    @Getter
     private static String latestMd5 = null; // ✅ Store the latest MD5 hash
 
     public String generateAndDisplayQRCode(double grandTotal) throws WriterException {
@@ -135,41 +139,6 @@ public class QRCode {
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
-
-//    private void waitForPayment(String md5) {
-//        int waitTime = 200; // Initial wait time 200ms
-//        long startTime = System.currentTimeMillis();
-//        long timeout = 60 * 1000; // 60 seconds
-//
-//        while (System.currentTimeMillis() - startTime < timeout) {
-//            try {
-//                Thread.sleep(waitTime);
-//
-//                if (validateMd5(md5)) {
-//                    SwingUtilities.invokeLater(() -> {
-//                        statusLabel.setText("\t✅ Payment Successful!");
-//                        JOptionPane.showMessageDialog(frame, "Payment Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-//                        frame.dispose();
-//                    });
-//                    System.out.println("✅ Payment Successful!");
-//                    return;
-//                }
-//
-//                waitTime = Math.min(waitTime * 2, 2000); // Exponential backoff up to 2 seconds
-//
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//                return;
-//            }
-//        }
-//
-//        // Timeout case
-//        SwingUtilities.invokeLater(() -> {
-//            statusLabel.setText("❌ Payment Timed Out");
-//            JOptionPane.showMessageDialog(frame, "Payment Timed Out", "Error", JOptionPane.ERROR_MESSAGE);
-//            frame.dispose();
-//        });
-//    }
 private void waitForPayment(String md5) {
     int waitTime = 200; // Initial wait time 200ms
     long startTime = System.currentTimeMillis();
@@ -255,11 +224,8 @@ private void waitForPayment(String md5) {
     return false;
 }
 
-    public static String getLatestMd5() {
-        // ✅ Implement a method to check if MD5 is available
-        return latestMd5;
-    }
-
+    @Setter
+    @Getter
     private static class Md5Request {
         private String md5;
 
@@ -267,13 +233,6 @@ private void waitForPayment(String md5) {
             this.md5 = md5;
         }
 
-        public String getMd5() {
-            return md5;
-        }
-
-        public void setMd5(String md5) {
-            this.md5 = md5;
-        }
     }
 
     // test QR

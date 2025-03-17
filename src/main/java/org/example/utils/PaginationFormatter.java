@@ -1,10 +1,14 @@
 package org.example.utils;
 
+import lombok.Getter;
+
 import java.util.Scanner;
 
 public class PaginationFormatter {
+    @Getter
     private int currentPage;
     private int totalItems;
+    @Getter
     private int itemsPerPage;
     private Scanner scanner;
 
@@ -29,9 +33,9 @@ public class PaginationFormatter {
                 ColorFormatter.colorText("\n[E] Exit from Pagination View", ColorFormatter.RED);
         String chooseOption = ColorFormatter.colorText("👉 Choose an option: ", ColorFormatter.PURPLE);
 
-        System.out.println(ConsoleFormatter.centerText(pageInfo));
-        System.out.println(ConsoleFormatter.centerText(paginationControls));
-        System.out.print(ConsoleFormatter.centerText(chooseOption));
+        System.out.println((pageInfo));
+        System.out.println((paginationControls));
+        System.out.print((chooseOption));
     }
 
     public String getUserChoice() {
@@ -91,14 +95,6 @@ public class PaginationFormatter {
                     ConsoleFormatter.printErrorMessage("⚠️ Invalid input! Try again.");
             }
         }
-    }
-
-    public int getCurrentPage() {
-        return currentPage;
-    }
-
-    public int getItemsPerPage() {
-        return itemsPerPage;
     }
 
     public void nextPage() {

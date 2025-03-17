@@ -24,7 +24,7 @@ public class DisplayUI {
             }
 
             // Improve input prompt spacing
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.print((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
 
             int choice = Utils.validateIntegerInput(scanner, "", 0, 5);
             if (choice == -1) return; // Exit condition
@@ -41,9 +41,10 @@ public class DisplayUI {
 
                 case 2:
                     if (AuthUtils.login(scanner)) {
-                        new AdminController().adminPanel(scanner);
+                        ChefController chefController = new ChefController(scanner);
+                        chefController.start();
                     } else {
-                        ConsoleFormatter.printErrorMessage("❌ Access Denied: Incorrect Admin credentials.");
+                        ConsoleFormatter.printErrorMessage("❌ Incorrect credentials for Kitchen staff.");
                     }
                     break;
 
@@ -54,10 +55,9 @@ public class DisplayUI {
 
                 case 4:
                     if (AuthUtils.login(scanner)) {
-                        ChefController chefController = new ChefController(scanner);
-                        chefController.start();
+                        new AdminController().adminPanel(scanner);
                     } else {
-                        ConsoleFormatter.printErrorMessage("❌ Incorrect credentials for Kitchen staff.");
+                        ConsoleFormatter.printErrorMessage("❌ Access Denied: Incorrect Admin credentials.");
                     }
                     break;
 

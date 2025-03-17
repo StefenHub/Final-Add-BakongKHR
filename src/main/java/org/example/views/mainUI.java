@@ -30,7 +30,7 @@ public class mainUI {
     public mainUI() {
         for (String line : rosCambodia) {
             int rosPadding = (consoleWidth - line.length()) / 2; // Calculate padding for centering
-            System.out.println(" ".repeat(rosPadding) + BOLD_BLUE + line + RESET);
+            System.out.println("\t\t\t"+ BOLD_BLUE + line + RESET);
         }
 
         // Create a table with a SINGLE wide column
@@ -59,7 +59,7 @@ public class mainUI {
         // Print the Table with WHITE Borders
         String[] tableLines = table.render().split("\n");
         for (String line : tableLines) {
-            System.out.println(WHITE_BORDER + padding + line + RESET);
+            System.out.println(WHITE_BORDER + line + RESET);
         }
     }
 

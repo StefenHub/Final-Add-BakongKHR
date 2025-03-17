@@ -19,20 +19,20 @@ public class MenuItemManager {
             // Step 1: Fetch and Display Categories
             List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             CategoryManager.displayCategories();
 
-            int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("👉 Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return;
 
             int selectedCategoryId = (int) categories.get(categoryChoice - 1).get("id");
 
             // Step 2: Display Items in the Selected Category
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Items in Category: " + selectedCategoryId + " ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("--- Items in Category: " + selectedCategoryId + " ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             String sql = "SELECT * FROM menuitemsadmin WHERE category_id = ? ORDER BY name";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt(1, selectedCategoryId);
@@ -60,19 +60,19 @@ public class MenuItemManager {
                     table.addCell(String.format("$%.2f", rs.getDouble("discount")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 }
                 if (count == 1) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No items available in the selected category.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ No items available in the selected category.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     return;
                 }
-                System.out.println(ConsoleFormatter.centerText(table.render()));
+                System.out.println((table.render()));
             }
 
             // Step 3: Enter Item ID to Delete
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the Item ID to delete: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.print((ColorFormatter.colorText("Enter the Item ID to delete: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             int itemId;
             try {
                 itemId = Integer.parseInt(scanner.nextLine().trim());
             } catch (NumberFormatException e) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
@@ -83,13 +83,13 @@ public class MenuItemManager {
                 int rowsDeleted = deleteStmt.executeUpdate();
 
                 if (rowsDeleted > 0) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Menu item deleted successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("✅ Menu item deleted successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 } else {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Item ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Item ID not found.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
@@ -101,15 +101,15 @@ public class MenuItemManager {
             // Step 1: Fetch and Display Categories
             List<Map<String, Object>> categories = CategoryManager.getCategories();
             if (categories.isEmpty()) {
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("❌ No categories available. Please add a category first.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 return;
             }
 
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("--- Select a Category ---", ColorFormatter.BLUE + ColorFormatter.BOLD)));
             CategoryManager.displayCategories();
 
             // Step 2: Validate Category Selection
-            int categoryChoice = Utils.validateIntegerInput(scanner, ConsoleFormatter.centerText(ColorFormatter.colorText("Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
+            int categoryChoice = Utils.validateIntegerInput(scanner, (ColorFormatter.colorText("Enter the category number ([b] to go back): ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, categories.size());
             if (categoryChoice == -1) return; // User chose to go back
 
             selectedCategoryId = (int) categories.get(categoryChoice - 1).get("id");
@@ -117,31 +117,31 @@ public class MenuItemManager {
             // Step 3: Validate Item Name
             String name;
             while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter item name: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter item name: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 name = scanner.nextLine().trim();
                 if (name.isEmpty()) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Item name cannot be empty. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Item name cannot be empty. Please try again.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else if (!name.matches("[a-zA-Z0-9\\s]+")) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid item name. Only alphanumeric characters and spaces are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid item name. Only alphanumeric characters and spaces are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     break; // Valid name
                 }
             }
 
             // Step 4: Optional Description
-            System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter item description (optional): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+            System.out.print((ColorFormatter.colorText("Enter item description (optional): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             String description = scanner.nextLine().trim();
 
             // Step 5: Validate Size
             String size;
             while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter size [(S, M, L, XL, etc.) or press Enter to skip]: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter size [(S, M, L, XL, etc.) or press Enter to skip]: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 size = scanner.nextLine().trim().toUpperCase();
                 if (size.isEmpty()) {
                     size = null; // Allow skipping size
                     break;
                 } else if (!size.matches("[A-Z]+")) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid size. Only uppercase letters (e.g., S, M, L, XL) are allowed.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 } else {
                     break; // Valid size
                 }
@@ -150,39 +150,39 @@ public class MenuItemManager {
             // Step 6: Validate Base Price
             double basePrice;
             while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter base price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter base price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 try {
                     basePrice = Double.parseDouble(scanner.nextLine().trim());
                     if (basePrice <= 0) {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Base price must be greater than zero.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                        System.out.println((ColorFormatter.colorText("❌ Base price must be greater than zero.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid base price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
             // Step 7: Validate Sell Price
             double sellPrice;
             while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter sell price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter sell price: ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 try {
                     sellPrice = Double.parseDouble(scanner.nextLine().trim());
                     if (sellPrice < basePrice) {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Sell price must be greater than or equal to the base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                        System.out.println((ColorFormatter.colorText("❌ Sell price must be greater than or equal to the base price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid sell price
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
             // Step 8: Validate Discount
             double discount = 0.0;
             while (true) {
-                System.out.print(ConsoleFormatter.centerText(ColorFormatter.colorText("Enter discount (press Enter to skip): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.print((ColorFormatter.colorText("Enter discount (press Enter to skip): ", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                 String discountInput = scanner.nextLine().trim();
                 if (discountInput.isEmpty()) {
                     break; // No discount
@@ -190,12 +190,12 @@ public class MenuItemManager {
                 try {
                     discount = Double.parseDouble(discountInput);
                     if (discount < 0 || discount > sellPrice) {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Discount must be between 0 and the sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                        System.out.println((ColorFormatter.colorText("❌ Discount must be between 0 and the sell price.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         break; // Valid discount
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for discount.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                    System.out.println((ColorFormatter.colorText("❌ Invalid input. Please enter a valid numeric value for discount.", ColorFormatter.RED + ColorFormatter.BOLD)));
                 }
             }
 
@@ -210,10 +210,10 @@ public class MenuItemManager {
                 pstmt.setDouble(6, sellPrice);
                 pstmt.setDouble(7, discount);
                 pstmt.executeUpdate();
-                System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("✅ Menu item added successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
+                System.out.println((ColorFormatter.colorText("✅ Menu item added successfully!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
         }
     }
 
@@ -230,7 +230,7 @@ public class MenuItemManager {
                 displayItemsByCategory1(categoryId);
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Error retrieving categories: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Error retrieving categories: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
         }
     }
@@ -262,14 +262,14 @@ public class MenuItemManager {
                     }
 
                     if (!hasItems) {
-                        System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ No items found in this category.", ColorFormatter.RED + ColorFormatter.BOLD)));
+                        System.out.println((ColorFormatter.colorText("❌ No items found in this category.", ColorFormatter.RED + ColorFormatter.BOLD)));
                     } else {
                         System.out.println(table.render());
                     }
                 }
             }
         } catch (SQLException e) {
-            System.out.println(ConsoleFormatter.centerText(ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
+            System.out.println((ColorFormatter.colorText("❌ Database error: " + e.getMessage(), ColorFormatter.RED + ColorFormatter.BOLD)));
             e.printStackTrace();
         }
     }
