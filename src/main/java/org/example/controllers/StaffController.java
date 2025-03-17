@@ -60,7 +60,7 @@ public class StaffController {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
             int choice = validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 3);

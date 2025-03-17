@@ -39,7 +39,7 @@ public class StaffService {
     }
 
     private String formatText(String text, String color) {
-        return ConsoleFormatter.centerText(ColorFormatter.colorText(text, color));
+        return (ColorFormatter.colorText(text, color));
     }
 
     public void start() {
@@ -60,7 +60,7 @@ public class StaffService {
                     "2.  Order Now",
                     "3.  View Cart",
                     "4.  Confirm and Pay",
-                    "0.  Exit"
+                    "5.  Exit"
             };
 
             for (String option : options) {
@@ -70,7 +70,7 @@ public class StaffService {
             // Print the Table with WHITE Borders
             String[] tableLines = table.render().split("\n");
             for (String line : tableLines) {
-                System.out.println(WHITE_BORDER + padding + line + RESET);
+                System.out.println(WHITE_BORDER + line + RESET);
             }
 
             int choice = validateIntegerInput((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 5, false);
@@ -79,7 +79,7 @@ public class StaffService {
                 case 2 -> addItemToCart();
                 case 3 -> viewCartWithEditOptions();
                 case 4 -> confirmAndPay();
-                case 0 -> {
+                case 5 -> {
                     System.out.println((ColorFormatter.colorText("Thank you for visiting! Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                     return;
                 }

@@ -62,7 +62,7 @@ public class ChefController {
             int choice = InputValidator.validateIntegerInput(scanner, (ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 3);
             if (choice == -1) {
                 System.out.println((ColorFormatter.colorText("⚠️ Invalid input! Try again.", ColorFormatter.YELLOW + ColorFormatter.BOLD)));
-                continue; // Invalid input, re-prompt the menu
+                continue;
             }
             switch (choice) {
                 case 1:
@@ -89,7 +89,7 @@ public class ChefController {
         pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, customer_name, quantity, size, description, order_date, status FROM orders ORDER BY order_date DESC LIMIT ? OFFSET ?", pagination.getCurrentPage());
+            displayOrders("SELECT order_id, order_date, status FROM orders ORDER BY order_date DESC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
             System.out.println((ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
             System.out.println((ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
@@ -115,11 +115,10 @@ public class ChefController {
         pagination = new PaginationFormatter(totalItems, 10); // Initialize pagination with default items per page
 
         while (true) {
-            displayOrders("SELECT order_id, customer_name, quantity, size, description, order_date, status FROM orders WHERE status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", pagination.getCurrentPage());
+            displayOrders("SELECT order_id, order_date, status FROM orders WHERE status = 'pending' ORDER BY order_date ASC LIMIT ? OFFSET ?", pagination.getCurrentPage());
 
             System.out.println((ColorFormatter.colorText("📄 Page " + pagination.getCurrentPage() + " of " + pagination.getTotalPages(), ColorFormatter.GREEN + ColorFormatter.BOLD)));
             System.out.println((ColorFormatter.colorText("[N] Next  |  [P] Previous  |  [C] Change items per page  |  [E] Exit", ColorFormatter.GREEN + ColorFormatter.BOLD)));
-
             String choice = scanner.next().toLowerCase();
             if (choice.equals("n")) {
                 pagination.nextPage();
@@ -146,21 +145,13 @@ public class ChefController {
             stmt.setInt(2, offset);
             ResultSet rs = stmt.executeQuery();
 
-            Table table = new Table(7, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
+            Table table = new Table(3, BorderStyle.UNICODE_ROUND_BOX_WIDE, ShownBorders.ALL);
             table.addCell("Order ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Customer Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Size", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("Description", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Order Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table.addCell("Status", new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             while (rs.next()) {
                 table.addCell(String.valueOf(rs.getInt("order_id")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("customer_name"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(String.valueOf(rs.getInt("quantity")), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("size"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(rs.getString("description"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getTimestamp("order_date").toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
                 table.addCell(rs.getString("status"), new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }

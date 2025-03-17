@@ -19,18 +19,18 @@ public class mainUI {
 
     // Centering "ROS CAMBODIA" ASCII Art
     String[] rosCambodia = {
-            " ███╗   ███╗ █████╗  ██████╗    ██████╗  ██████╗ ███████╗                ",
-            " ████╗ ████║██╔══██╗██╔════╝    ██╔══██╗██╔═══██╗██╔════╝                ",
-            " ██╔████╔██║███████║██║         ██████╔╝██║   ██║███████╗                ",
-            " ██║╚██╔╝██║██╔══██║██║         ██╔══██╗██║   ██║╚════██║                ",
-            " ██║ ╚═╝ ██║██║  ██║╚██████╗    ██║  ██║╚██████╔╝███████║                ",
-            " ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝    ╚═╝  ╚═╝ ╚═════╝ ╚══════╝                "
+            "██╗ ██████╗  ██████╗ ███████╗",
+            "    ██╔══██╗██╔═══██╗██╔════╝",
+            "██║ ██████╔╝██║   ██║███████╗",
+            "██║ ██╔══██╗██║   ██║╚════██║",
+            "██║ ██║  ██║╚██████╔╝███████║",
+            "╚═╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝"
     };
 
     public mainUI() {
         for (String line : rosCambodia) {
             int rosPadding = (consoleWidth - line.length()) / 2; // Calculate padding for centering
-            System.out.println("\t\t\t"+ BOLD_BLUE + line + RESET);
+            System.out.println("\t\t\t\t\t\t\t"+ BOLD_BLUE + line + RESET);
         }
 
         // Create a table with a SINGLE wide column

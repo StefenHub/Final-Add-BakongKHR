@@ -57,7 +57,7 @@ public class CustomerController {
                     "2.  Order Now",
                     "3.  View Cart",
                     "4.  Confirm and Pay",
-                    "0.  Exit"
+                    "5.  Exit"
             };
 
             for (String option : options) {
@@ -70,13 +70,13 @@ public class CustomerController {
                 System.out.println(WHITE_BORDER + line + RESET);
             }
 
-            int choice = validateIntegerInput((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 0, 5, false);
+            int choice = validateIntegerInput((ColorFormatter.colorText("👉 Enter your choice: ", ColorFormatter.GREEN + ColorFormatter.BOLD)), 1, 5, false);
             switch (choice) {
                 case 1 -> CustomerMenuViewer.viewMenuItemsCustomer();
                 case 2 -> addItemToCart();
                 case 3 -> viewCartWithEditOptions();
                 case 4 -> confirmAndPay();
-                case 0 -> {
+                case 5 -> {
                     System.out.println((ColorFormatter.colorText("Thank you for visiting! Goodbye!", ColorFormatter.GREEN + ColorFormatter.BOLD)));
                     return;
                 }
@@ -249,9 +249,7 @@ public class CustomerController {
 
         displayMessage("\n💳 ─── Payment Process ───", ColorFormatter.CYAN);
 
-        boolean isStaff = checkUserRole(); // Implement method to check user role
-
-        // Display payment options based on role
+        boolean isStaff = checkUserRole();
         if (isStaff) {
             displayMessage("👉 Select Payment Method:\n1. Cash\n2. QR Code\n3. Go Back", ColorFormatter.YELLOW);
         } else {

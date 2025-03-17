@@ -95,7 +95,7 @@ public class OrderService {
         }
 
         System.out.println(table.render());
-        System.out.printf("\tPage %d of %d%n", currentPage, totalPages);
+        //System.out.printf("\tPage %d of %d%n", currentPage, totalPages);
     }
 
     // Get list of categories
